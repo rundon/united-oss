@@ -1,7 +1,6 @@
 package com.onefly.united.view.service.impl;
 
-import com.aspose.cells.HtmlSaveOptions;
-import com.aspose.cells.Workbook;
+import com.aspose.cells.*;
 import com.aspose.slides.Presentation;
 import com.aspose.slides.SaveFormat;
 import com.aspose.words.Document;
@@ -62,6 +61,12 @@ public class AsposeListener {
                 doc.save(outputFilePath, saveOptions);
             } else if (AsposeType.CELL == asposeDto.getAsposeType()) {
                 Workbook wb = new Workbook(inputFilePath);// 原始excel路径
+                Style style = wb.createStyle();
+                WorksheetCollection worksheets = wb.getWorksheets();
+                for (int i = 0; i < worksheets.getCount(); i++) {
+                    System.out.println("重置格式");
+                    restStyle(worksheets.get(i), style);
+                }
                 HtmlSaveOptions options = new HtmlSaveOptions();
                 options.setAddTooltipText(true);
                 wb.save(outputFilePath, options);
@@ -71,11 +76,6 @@ public class AsposeListener {
             }
             long now = System.currentTimeMillis();
             log.info("转换成功，共耗时：" + ((now - old) / 1000.0) + "秒");
-            File inputFile = new File(inputFilePath);
-            if (inputFile.exists()) {
-                log.info("删除文件:" + inputFilePath);
-                inputFile.delete();
-            }
             if (!isHtml && (OFFICE_PREVIEW_TYPE_IMAGE.equals(officePreviewType) || OFFICE_PREVIEW_TYPE_ALL_IMAGES.equals(officePreviewType))) {
                 String res = OfficeFilePreviewImpl.getPreviewType(model, fileAttribute, officePreviewType, outputFilePath, pdfUtils, OFFICE_PREVIEW_TYPE_IMAGE);
                 deferredResult.setResult(res);
@@ -97,6 +97,25 @@ public class AsposeListener {
             }
         }
         return result;
+    }
+
+    private void restStyle(Worksheet worksheet, Style style) throws Exception {
+        style.setTextWrapped(true);
+        style.setBorder(BorderType.BOTTOM_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.LEFT_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.RIGHT_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.TOP_BORDER, CellBorderType.THIN, Color.getBlack());
+        worksheet.autoFitColumns();
+        worksheet.autoFitRows();
+        Cells cells = worksheet.getCells();
+        int col = cells.getColumns().getCount();
+        int row = cells.getRows().getCount();
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                Cell cell = cells.get(i, j);
+                cell.setStyle(style);
+            }
+        }
     }
 
 }

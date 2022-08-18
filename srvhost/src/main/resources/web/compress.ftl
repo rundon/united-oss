@@ -57,7 +57,7 @@
         var url = getQueryVariable("url");
         var prekey = getQueryVariable("prekey");
         if (url) {
-            if (url.indexOf('.zip') == -1) {
+            if (url.indexOf('.zip') == -1||url.indexOf("http")>=0) {
             } else {
                 vm.replyshow = true;
             }
@@ -127,11 +127,11 @@
             },
             replyfun: function () {
                 var url = getQueryVariable("url");
-                if (url != "") {
+                if (url != ""&&url.indexOf("http")<0) {
                     window.location.replace(document.referrer)
                     //window.history.back();
                 } else {
-                    var ids = vm.parentDirName.split(",");
+                    var ids = vm.parentDirName.split(",").sort();
                     var id = ids[ids.length - 1];
                     var chil = loadParent(id, json);
                     if (ids.length > 1) {

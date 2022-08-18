@@ -21,7 +21,11 @@
 <#if pdfUrl?contains("http://") || pdfUrl?contains("https://")>
     <#assign finalUrl="${pdfUrl}">
 <#else>
+    <#if certification=="none">
         <#assign finalUrl="/preview/"+"${pdfUrl}">
+    <#else>
+        <#assign finalUrl="/pcms/"+"${pdfUrl}">
+    </#if>
 </#if>
 <iframe src="" width="100%" frameborder="0"></iframe>
 <#if disableSwitch==false>

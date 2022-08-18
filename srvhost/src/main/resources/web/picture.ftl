@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>图片预览</title>
-    <link rel="stylesheet" href="/css/viewer.min.css">
+    <link rel="stylesheet" href="css/viewer.min.css">
     <style>
         * {
             margin: 0;
@@ -27,9 +27,9 @@
         <li><img id="${img}"  url="${img}" src="${img}" width="1px" height="1px"></li>
     </#list>
 </ul>
-<script src="/js/jquery-3.0.0.min.js"></script>
-<script src="/js/viewer.min.js"></script>
-<script src="/js/watermark.js" type="text/javascript"></script>
+<script src="js/jquery-3.0.0.min.js"></script>
+<script src="js/viewer.min.js"></script>
+<script src="js/watermark.js" type="text/javascript"></script>
 <script>
     var viewer = new Viewer(document.getElementById('dowebok'), {
         url: 'src',
