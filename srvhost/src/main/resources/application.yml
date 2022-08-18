@@ -1,0 +1,181 @@
+server:
+  tomcat:
+    uri-encoding: UTF-8
+  port: 8087
+  servlet:
+    context-path: /
+    session:
+      cookie:
+        http-only: true
+
+spring:
+  application:
+    name: united.oss
+  messages:
+    encoding: UTF-8
+    basename: i18n/messages
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+  cloud:
+    config:
+      enabled: false
+      uri: http://config:8888/
+  zipkin:
+    baseUrl: http://zipkin.dev.evaluation.com:9411
+    enabled: false
+  sleuth:
+    sampler:
+      probability: 1.0
+  jackson:
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+      READ_UNKNOWN_ENUM_VALUES_AS_NULL: true
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+      ORDER_MAP_ENTRIES_BY_KEYS: true
+      INDENT_OUTPUT: false
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  freemarker:
+    template-loader-path:
+      - classpath:/web/
+    cache: false
+    charset: utf-8
+    check-template-location: true
+    content-type: text/html
+    expose-request-attributes: true
+    expose-session-attributes: true
+    request-context-attribute: request
+    suffix: .ftl
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    ssl: false
+    database: 0
+    timeout: 2000
+    jedis:
+      pool:
+        max-active: 350  # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1ms      # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 10      # 连接池中的最大空闲连接
+        min-idle: 5       # 连接池中的最小空闲连接
+  datasource:
+    druid:
+      #MySQL
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      initial-size: 10
+      max-active: 100
+      min-idle: 10
+      max-wait: 6000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      #Oracle需要打开注释
+      #validation-query: SELECT 1 FROM DUAL
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        #login-username: admin
+        #login-password: admin
+      filter:
+        stat:
+          merge-sql: true
+          log-slow-sql: true
+          slow-sql-millis: 500
+        slf4j:
+          enabled: true
+          data-source-log-enabled: true
+          result-set-log-enabled: false
+          connection-log-enabled: true
+          connection-log-error-enabled: true
+          statement-log-enabled: false
+          statement-log-error-enabled: true
+          statement-executable-sql-log-enable: true
+        wall:
+          config:
+            multi-statement-allow: true
+      web-stat-filter:
+          enabled: false
+  flyway:
+    enabled: true
+    locations: filesystem:srvhost/docker/app/db/migration
+    table: flyway_schema_history_oss
+    baseline-on-migrate: true
+    validate-on-migrate: false
+
+security:
+  oauth2:
+    client:
+      client-id: openid
+      client-secret: 693bb00a19134e3c9fc990bc9742f614
+      access-token-uri: ${security.oauth2.sso.address}/oauth/token
+      user-authorization-uri: ${security.oauth2.sso.address}/oauth/authorize
+    resource:
+      user-info-uri: ${security.oauth2.sso.address}/api/user
+      prefer-token-info: false
+united:
+  kkview:
+    cache:
+      type: redis
+      clean: false
+      enabled: true
+    disable-switch: false
+    certification:
+      bind-ip: false
+      resourceUri: ${security.oauth2.sso.address}/sys/oss/loadViewAnnex
+    file-save-dir: /data/
+    preview-type: pdf
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS
+  health:
+    mail:
+      enabled: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${SPRING_REGISTRY_URI:http://eureka:8761}/eureka/
+    enabled: false
+    register-with-eureka: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 600000
+
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false
+        isolation:
+          thread:
+            timeoutInMilliseconds: 3600000
+ribbon:
+  eager-load:
+    enabled: true
+  ReadTimeout: 3600000
+  ConnectTimeout: 3600000
+  OkToRetryOnAllOperations: false
+  MaxAutoRetries: 1
+  MaxAutoRetriesNextServer: 1
+  eureka:
+    enabled: true

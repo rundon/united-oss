@@ -1,0 +1,144 @@
+.fr {
+    float: right;
+}
+
+.doc-warp {
+    margin: 20px;
+}
+
+.doc-warp .search-item {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #efefef;
+}
+
+.doc-warp .doc-main {
+    width: 100%;
+}
+
+.doc-item {
+    width: 100%;
+    display: block;
+}
+
+.down-btn {
+    padding: 0 20px;
+    margin-bottom: 10px;
+}
+
+.doc-box {
+    width: 120px;
+    height: 127px;
+    float: left;
+    margin: 4px 6px 0 0;
+    text-align: center;
+    border: 1px solid #fff;
+    position: relative;
+}
+
+.doc-img {
+    position: relative;
+    margin: 9px auto 0;
+    width: 84px;
+    height: 84px;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.doc-name {
+    cursor: pointer;
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin: 5px;
+}
+
+.doc-large-file {
+    background: url(../images/doc.png) center no-repeat;
+}
+
+.doc-large-word {
+    background: url(../images/word.png) center no-repeat;
+}
+
+.doc-large-txt {
+    background: url(../images/txt.png) center no-repeat;
+}
+
+.doc-large-html {
+    background: url(../images/html.png) center no-repeat;
+}
+
+.doc-large-xls {
+    background: url(../images/xls.png) center no-repeat;
+}
+
+.doc-large-zip {
+    background: url(../images/zip.png) center no-repeat;
+}
+
+.doc-large-pdf {
+    background: url(../images/pdf.png) center no-repeat;
+}
+
+.doc-large-other {
+    background: url(../images/other.png) center no-repeat;
+}
+
+.doc-large-img {
+    background: url(../images/img.png) center no-repeat;
+}
+
+.doc-large-ppt {
+    background: url(../images/pdf.png) center no-repeat;
+}
+
+.doc-box:hover {
+    background-color: #f1f5fa;
+    border: 1px solid #90d8ff;
+    border-radius: 5px;
+}
+
+.hover {
+    background-color: #f1f5fa;
+    border: 1px solid #90d8ff;
+    border-radius: 5px;
+}
+
+.radio-slt {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    height: 21px;
+    width: 21px;
+    cursor: pointer;
+    display: none;
+}
+
+.show {
+    display: block;
+}
+
+.my-radio .my-radio-input {
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    display: none;
+}
+
+.my-radio .my-radio-input + span {
+    width: 16px;
+    height: 16px;
+    background-color: red;
+    display: inline-block;
+    background: url(../images/icon_radio.png) no-repeat;
+    background-position-x: 0px;
+    background-position-y: -25px;
+    position: relative;
+    top: 3px;
+}
+
+.my-radio .my-radio-input:checked + span {
+    background-position: 0 0px
+}

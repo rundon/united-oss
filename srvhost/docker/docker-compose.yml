@@ -1,0 +1,50 @@
+version: "3.7"
+services:
+  oauth2:
+    image: $IMAGE_NAME
+    networks:
+      - shangyouth
+    ports:
+      - 8088:8080
+    volumes:
+      - data:/data
+    environment:
+      - info.git.ref=${CI_COMMIT_REF_NAME}
+      - info.git.commit=${CI_COMMIT_SHA}
+      - info.git.pipleine=${CI_PIPELINE_ID}
+      - info.git.job=${CI_JOB_NAME}
+      - spring.application.name=housing.oauth2
+      - spring.flyway.enabled=false
+      - spring.flyway.locations=filesystem:/app/scripts/db-migration
+      - JAVA_OPTS=-server -Xms512m -Xmx1024m
+        -verbose:gc
+        -XX:+PrintCommandLineFlags
+        -XX:+PrintGCDetails
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/data/dump/
+        -Dspring.profiles.active=${ENV}
+        -Dinspire.event.rocketmq.topic=housing-${ENV}
+        -Dinspire.event.rocketmq.producer-group-name=housing-oauth2-${ENV}
+        -Dinspire.event.rocketmq.consumer-group-name=housing-oauth2-${ENV}
+    deploy:
+      replicas: ${REPLICAS_COUNT-1}
+      resources:
+        limits:
+          memory: 1088M
+        reservations:
+          memory: 576M
+      update_config:
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+networks:
+  shangyouth:
+    external: true
+volumes:
+  data:
