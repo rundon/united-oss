@@ -18,7 +18,6 @@ import com.onefly.united.common.validator.ValidatorUtils;
 import com.onefly.united.common.validator.group.DefaultGroup;
 import com.onefly.united.oauth2.service.SysParamsService;
 import com.onefly.united.oss.cloud.CloudStorageConfig;
-import com.onefly.united.oss.cloud.OSSFactory;
 import com.onefly.united.oss.dto.CheckFileDto;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import com.onefly.united.oss.dto.SysOssDto;
@@ -30,7 +29,6 @@ import com.onefly.united.oss.service.SysOssService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +38,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -73,7 +70,6 @@ public class SysOssController {
     @PreAuthorize("hasAuthority('sys:oss:all')")
     public Result<CloudStorageConfig> info() {
         CloudStorageConfig config = sysParamsService.getValueObject(KEY, CloudStorageConfig.class);
-
         return new Result<CloudStorageConfig>().ok(config);
     }
 
