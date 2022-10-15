@@ -125,32 +125,4 @@
             </plugins>
         </pluginManagement>
     </build>
-    <repositories>
-        <repository>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>onefly-repos</id>
-            <name>Internal Public</name>
-            <url>http://registry.onefly.com:8081/repository/maven-public/</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>aliyun-repos</id>
-            <url>https://maven.aliyun.com/repository/public</url>
-        </pluginRepository>
-    </pluginRepositories>
-    <distributionManagement>
-        <repository>
-            <id>onefly-repos</id>
-            <name>Internal Releases</name>
-            <url>http://registry.onefly.com:8081/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>Internal Snapshots</name>
-            <url>http://registry.onefly.com:8081/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>
