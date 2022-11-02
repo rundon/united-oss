@@ -35,10 +35,13 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!-- This snippet is used in production (included from viewer.html) -->
 <link rel="resource" type="application/l10n" href="locale/locale.properties">
 <script src="../build/pdf.js"></script>
-
-
+    <script type="text/javascript" src="../../js/jquery.min.js"></script>
     <script src="viewer.js"></script>
-
+<style>
+  .toolbarButton.clearCacheMode::before{
+    content: url(images/secondaryToolbarButton-rotateCw.png);
+  }
+</style>
   </head>
 
   <body tabindex="1" class="loadingInProgress">
@@ -227,9 +230,13 @@ See https://github.com/adobe-type-tools/cmap-resources
 
                 <div class="verticalToolbarSeparator hiddenSmallView"></div>
 
-                <button id="secondaryToolbarToggle" class="toolbarButton" title="Tools" tabindex="36" data-l10n-id="tools">
+                <button id="clearCache" class="toolbarButton clearCacheMode hiddenLargeView" title="清除缓存" tabindex="36" onclick="clearCache()">
+                  <span data-l10n-id="清除缓存">清除缓存</span>
+                </button>
+                <button id="secondaryToolbarToggle" class="toolbarButton" title="Tools" tabindex="37" data-l10n-id="tools">
                   <span data-l10n-id="tools_label">Tools</span>
                 </button>
+
               </div>
               <div id="toolbarViewerMiddle">
                 <div class="splitToolbarButton">
@@ -393,6 +400,57 @@ See https://github.com/adobe-type-tools/cmap-resources
   <script type="text/javascript">
     document.oncontextmenu=function(ev){
         return false;
+    }
+
+    /**
+     * 获取参数
+     * @returns {*[]}
+     */
+    function getJsUrl(){
+      var pos,str,para,parastr;
+      var array =[]
+      str = document.referrer;
+      parastr = str.split("?")[1];
+      var arr = parastr.split("&");
+      for (var i=0;i<arr.length;i++){
+        array[arr[i].split("=")[0]]=arr[i].split("=")[1];
+      }
+      return array;
+    }
+
+    function clearCache(){
+      debugger
+      var req = getJsUrl();
+      var url=req["url"];
+      var id=req["id"];
+      var token=req["access_token"];
+      var cleanUrl="";
+      if(url!=undefined && url!=""){
+        cleanUrl="/preview/cleanPreview?url="+url;
+      }else if(id!=undefined && token!=undefined){
+        cleanUrl="/preview/cleanPreviewById?id="+id+"&access_token="+token;
+      }
+      if(cleanUrl!=""){
+        var str = document.referrer;
+        var msg = "您确定要清除缓存吗？";
+        if (confirm(msg)==true){
+          $.ajax({
+            url:cleanUrl,
+            success:function(result){
+              console.log(result);
+              window.parent.location.reload();
+            },
+            error:function(error){
+              console.log(error);
+            }
+          });
+        }else{
+          return false;
+        }
+      }else{
+        alert("清除缓存失败。");
+      }
+
     }
 </script>
 </html>

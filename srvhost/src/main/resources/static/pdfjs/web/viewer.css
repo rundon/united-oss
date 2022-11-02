@@ -1340,6 +1340,10 @@ html[dir='rtl'] .toolbarButton.pageDown::before {
   content: url(images/toolbarButton-presentationMode.png);
 }
 
+.toolbarButton.clearCacheMode::before{
+  content: url(images/secondaryToolbarButton-rotateCw.png);
+}
+
 .toolbarButton.print::before,
 .secondaryToolbarButton.print::before {
   content: url(images/toolbarButton-print.png);

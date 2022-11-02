@@ -15,6 +15,7 @@
         <fastdfs.version>1.26.2</fastdfs.version>
         <qcloud.cos.version>5.4.4</qcloud.cos.version>
         <qiniu.version>7.2.27</qiniu.version>
+        <icepdf.version>6.3.3</icepdf.version>
     </properties>
     <artifactId>provider</artifactId>
     <dependencies>
@@ -99,12 +100,12 @@
         <dependency>
             <groupId>org.icepdf</groupId>
             <artifactId>icepdf-core</artifactId>
-            <version>6.3.3</version>
+            <version>${icepdf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.icepdf</groupId>
             <artifactId>icepdf-viewer</artifactId>
-            <version>6.3.3</version>
+            <version>${icepdf.version}</version>
         </dependency>
         <dependency>
             <groupId>com.aspose</groupId>
@@ -115,7 +116,8 @@
         <dependency>
             <groupId>com.aspose</groupId>
             <artifactId>aspose-slides</artifactId>
-            <version>15.9.0</version>
+            <version>21.10</version>
+            <classifier>crack</classifier>
         </dependency>
         <dependency>
             <groupId>com.aspose</groupId>

@@ -131,7 +131,7 @@ public class FileUtils {
         list.add("doc");
         list.add("xls");
         list.add("xlsx");
-/*        list.add("ppt");*/
+        list.add("ppt");
         list.add("pptx");
 
         list.add("rtf");
@@ -322,5 +322,20 @@ public class FileUtils {
             fileAttribute.setStorageType(StorageType.LOCAL);
         }
         return fileAttribute;
+    }
+
+    /**
+     * 删除临时文件
+     *
+     * @param f
+     */
+    public static void delDir(File f) {
+        if (f.isDirectory()) {
+            File[] subFiles = f.listFiles();
+            for (File subFile : subFiles) {
+                delDir(subFile);
+            }
+        }
+        f.delete();
     }
 }

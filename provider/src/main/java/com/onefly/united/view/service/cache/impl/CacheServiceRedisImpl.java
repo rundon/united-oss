@@ -1,6 +1,7 @@
 package com.onefly.united.view.service.cache.impl;
 
 
+import com.google.common.collect.Lists;
 import com.onefly.united.view.service.cache.CacheService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
@@ -9,6 +10,7 @@ import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -86,7 +88,7 @@ public class CacheServiceRedisImpl implements CacheService {
 
     @Override
     public void cleanPDFImageCache(String key) {
-        RMapCache<String, String> convertedList = redissonClient.getMapCache(FILE_PREVIEW_PDF_IMGS_KEY);
+        RMapCache<String, Integer> convertedList = redissonClient.getMapCache(FILE_PREVIEW_PDF_IMGS_KEY);
         convertedList.remove(key);
     }
 
@@ -94,6 +96,38 @@ public class CacheServiceRedisImpl implements CacheService {
     public void cleanMd5Cache(String key) {
         RMapCache<String, String> convertedList = redissonClient.getMapCache(FILE_PDF_MD5_KEY);
         convertedList.remove(key);
+    }
+
+    @Override
+    public List<String> cleanAllLikeValue(String value) {
+        List<String> allKey = Lists.newArrayList();
+        RMapCache<String, String> pdf = redissonClient.getMapCache(FILE_PREVIEW_PDF_KEY);
+        List<String> pdfKey = Lists.newArrayList();
+        pdf.entrySet().stream().forEach(entry -> {
+            String likeValue = entry.getValue();
+            if (likeValue.indexOf(value) >= 0) {
+                pdfKey.add(entry.getKey());
+                allKey.add(entry.getKey());
+            }
+        });
+
+        RMapCache<String, Integer> img = redissonClient.getMapCache(FILE_PREVIEW_PDF_IMGS_KEY);
+        List<String> imgKey = Lists.newArrayList();
+        img.entrySet().stream().forEach(entry -> {
+            String likeValue = entry.getKey();
+            if (likeValue.indexOf(value) >= 0) {
+                imgKey.add(entry.getKey());
+                allKey.add(entry.getKey());
+            }
+        });
+        if (pdfKey != null && pdfKey.size() > 0) {
+            pdfKey.stream().forEach(key -> pdf.remove(key));
+        }
+        if (imgKey != null && imgKey.size() > 0) {
+            imgKey.stream().forEach(key -> img.remove(key));
+        }
+
+        return allKey;
     }
 
     @Override

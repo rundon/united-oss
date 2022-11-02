@@ -5,6 +5,10 @@ import com.onefly.united.view.config.KkViewProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -13,9 +17,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.security.AccessController;
-import java.security.MessageDigest;
-import java.security.PrivilegedAction;
+import java.security.*;
+import java.security.cert.X509Certificate;
 
 /**
  * 文件md5值
@@ -26,6 +29,14 @@ public class FileMD5Util {
 
     static {
         FileMD5Util.kkViewProperties = SpringContextUtils.getBean(KkViewProperties.class);
+        try {
+            trustAllHttpsCertificates();
+            HttpsURLConnection.setDefaultHostnameVerifier
+                    (
+                            (urlHostName, session) -> true
+                    );
+        } catch (Exception e) {
+        }
     }
 
     /**
@@ -124,6 +135,31 @@ public class FileMD5Util {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 跳过ssl证书
+     *
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException
+     */
+    private static void trustAllHttpsCertificates()
+            throws NoSuchAlgorithmException, KeyManagementException {
+        TrustManager[] trustAllCerts = new TrustManager[1];
+        trustAllCerts[0] = (TrustManager) new TrustAllManager();
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, null);
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    }
+
+    private static class TrustAllManager implements X509TrustManager {
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+        }
+        public void checkClientTrusted(X509Certificate[] certs, String authType) {
         }
     }
 }

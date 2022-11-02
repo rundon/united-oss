@@ -21,6 +21,7 @@ import org.springframework.util.DigestUtils;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.text.CollationKey;
 import java.text.Collator;
 import java.util.*;
@@ -58,7 +59,7 @@ public class ZipReader {
         List<String> imgUrls = Lists.newArrayList();
         String archiveFileName = fileUtils.getFileNameFromPath(filePath);
         try {
-            ZipFile zipFile = new ZipFile(filePath, fileUtils.getFileEncodeUTFGBK(filePath));
+            ZipFile zipFile = loadCycleZipFile(filePath);
             Enumeration<ZipArchiveEntry> entries = zipFile.getEntries();
             // 排序
             entries = sortZipEntries(entries);
@@ -89,10 +90,24 @@ public class ZipReader {
             // 开启新的线程处理文件解压
             executorService.submit(new ZipExtractorWorker(entriesToBeExtracted, zipFile, filePath));
             return new ObjectMapper().writeValueAsString(appender.get(""));
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private ZipFile loadCycleZipFile(String filePath) throws IOException {
+        ZipFile zipFile;
+        String ncode = fileUtils.getFileEncodeUTFGBK(filePath);
+        try {
+            zipFile = new ZipFile(filePath, ncode);
+        } catch (IOException e) {
+            if ("GBK".equals(ncode)) {
+                ncode = StandardCharsets.UTF_8.name();
+            }
+            zipFile = new ZipFile(filePath, ncode);
+        }
+        return zipFile;
     }
 
     /**

@@ -28,7 +28,7 @@ public class KkViewProperties {
     /**
      * office类型文档(word ppt)样式，默认为图片(image)，可配置为pdf（预览时也有按钮切换
      */
-    private String previewType = "image";
+    private String previewType = "pdf";
     /**
      * 是否允许切换
      */

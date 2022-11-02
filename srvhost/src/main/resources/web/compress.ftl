@@ -33,7 +33,7 @@
                 'doc-large-xls':item.originName.indexOf('.xls') != -1,
                 'doc-large-pdf':item.originName.indexOf('.pdf') != -1,
                 'doc-large-ppt':item.originName.indexOf('.ppt') != -1,
-                'doc-large-zip':item.originName.indexOf('.zip') != -1,
+                'doc-large-zip':(item.originName.indexOf('.zip') != -1||item.originName.indexOf('.rar') != -1||item.originName.indexOf('.7z') != -1||item.originName.indexOf('.jar') != -1||item.originName.indexOf('.gzip') != -1),
                 'doc-large-txt':item.originName.indexOf('.txt') != -1,
                 'doc-large-html':(item.originName.indexOf('.html')!=-1||item.originName.indexOf('.js')!= -1||item.originName.indexOf('.css') != -1),
                 'doc-large-file':item.directory}"></div>

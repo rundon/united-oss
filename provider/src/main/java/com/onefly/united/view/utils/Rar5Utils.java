@@ -36,13 +36,6 @@ public class Rar5Utils {
             file.mkdirs();
         }
         String unrar = kkViewProperties.getUnRar();
-        if (PlatformUtils.isWindows()) {//wind 拿本地的绿色版
-            String separator = File.separator;
-            String userDir = System.getProperty("user.dir");
-            if (userDir.contains("united-view")) {
-                unrar = userDir + separator + "srvhost" + separator + "src" + separator + "main" + separator + "WinRAR" + separator + "UnRAR.exe";
-            }
-        }
         if (!new File(unrar).exists()) {
             throw new RenException("WinRAR不存在，请安装WinRAR，并配置united.kkview.unRar");
         }
@@ -71,9 +64,9 @@ public class Rar5Utils {
 
     public static void main(String[] args) throws IOException {
         KkViewProperties kkViewProperties = new KkViewProperties();
-        kkViewProperties.setUnRar("C:\\Program Files\\WinRAR\\UnRAR.exe");
+        kkViewProperties.setUnRar("E:\\git\\united\\united-view\\srvhost\\src\\main\\WinRAR\\UnRAR.exe");
         Rar5Utils rar5Utils = new Rar5Utils(kkViewProperties);
-        Boolean result = rar5Utils.unRar5("D:\\data\\file\\9b5d5e0b-af87-4462-8fb2-bacd4b82e4b5.rar", "D:\\data\\file\\351bbc10-5243-450c-8f1f-2dfdfd1c2299");
+        Boolean result = rar5Utils.unRar5("E:\\rar\\fuck.rar", "E:\\rar\\35ada2085");
         System.out.println(result);
     }
 }

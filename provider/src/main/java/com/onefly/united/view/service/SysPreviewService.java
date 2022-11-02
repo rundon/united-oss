@@ -9,4 +9,8 @@ public interface SysPreviewService {
     DeferredResult<Object> onlinePreviewById(String id, Model model, HttpServletRequest req) throws Exception;
 
     DeferredResult<Object> onlinePreviewByUrl(String url, Model model, HttpServletRequest req) throws Exception;
+
+    String cleanPreview(String url) throws Exception;
+
+    String cleanPreviewById(String id,HttpServletRequest req) throws Exception;
 }

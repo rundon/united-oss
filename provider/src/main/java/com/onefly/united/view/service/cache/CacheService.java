@@ -1,5 +1,6 @@
 package com.onefly.united.view.service.cache;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,6 +52,12 @@ public interface CacheService {
      * @param key
      */
     void cleanMd5Cache(String key);
+
+    /**
+     * 删除值
+     * @param value
+     */
+    List<String> cleanAllLikeValue(String value);
 
     void addQueueTask(String url);
 

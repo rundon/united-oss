@@ -15,27 +15,24 @@ import org.springframework.util.ClassUtils;
 @Configuration
 @EnableConfigurationProperties({RedisProperties.class})
 public class RedissonConfig {
+
     @Bean
     public Config config(RedisProperties redisProperties) throws Exception {
         Config config = new Config();
-        config.useSingleServer().setAddress(redisProperties.getHost() + ":" + redisProperties.getPort())
+        config.useSingleServer().setAddress("redis://" + redisProperties.getHost() + ":" + redisProperties.getPort())
                 .setDatabase(redisProperties.getDatabase())
                 .setTimeout((int) redisProperties.getTimeout().toMillis())
                 .setConnectionMinimumIdleSize(10)
                 .setConnectionPoolSize(64)
-                .setDnsMonitoring(false)
                 .setDnsMonitoringInterval(5000)
                 .setSubscriptionConnectionMinimumIdleSize(1)
                 .setSubscriptionConnectionPoolSize(50)
                 .setSubscriptionsPerConnection(5)
-                .setFailedAttempts(3)
                 .setRetryAttempts(3)
                 .setRetryInterval(1500)
-                .setReconnectionTimeout(3000)
                 .setTimeout(3000)
                 .setConnectTimeout(10000)
-                .setIdleConnectionTimeout(10000)
-                .setPingTimeout(1000);
+                .setIdleConnectionTimeout(10000);
         if (StringUtils.isNotBlank(redisProperties.getPassword())) {
             config.useSingleServer().setPassword(redisProperties.getPassword());
         }
@@ -43,7 +40,6 @@ public class RedissonConfig {
         config.setCodec(codec);
         config.setThreads(4);
         config.setEventLoopGroup(new NioEventLoopGroup());
-        config.setUseLinuxNativeEpoll(false);
         return config;
     }
 

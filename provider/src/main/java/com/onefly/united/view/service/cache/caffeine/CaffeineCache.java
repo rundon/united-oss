@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -159,6 +160,32 @@ public class CaffeineCache {
     }
 
     /**
+     * 删除类似的值
+     *
+     * @param value
+     */
+    public void cleanAllLikeValue(String value) {
+        if (StringUtils.isNotBlank(value)) {
+            List<String> allKey = cacheService.cleanAllLikeValue(value);
+            allKey.stream().forEach(key -> {
+                System.out.println("删除：" + key);
+                pdfCache.invalidate(key);
+                pdfImagesCache.invalidate(key);
+            });
+        }
+    }
+
+    /**
+     * 清楚pdftup
+     *
+     * @param key
+     */
+    public void deleteConvertedPdfImage(String key) {
+        cacheService.cleanPDFImageCache(key);
+        pdfImagesCache.invalidate(key);
+    }
+
+    /**
      * 添加转换后图片组缓存
      *
      * @param pdfFilePath pdf文件绝对路径
@@ -178,14 +205,14 @@ public class CaffeineCache {
      */
     public CacheMdPdf loadPdfName(FileAttribute fileAttribute) throws Exception {
         CacheMdPdf cacheMdPdf = new CacheMdPdf();
-        String fileName = fileAttribute.getName();
-        String suffix = fileAttribute.getSuffix();
-        boolean isHtml = suffix.equalsIgnoreCase("xls") || suffix.equalsIgnoreCase("xlsx");
-        String pdfName = fileName.substring(0, fileName.lastIndexOf(".") + 1) + (isHtml ? "html" : "pdf");
-        log.info("文件类型" + fileAttribute.getStorageType());
         long old = System.currentTimeMillis();
         String md5 = FileMD5Util.getFileMD5(fileAttribute.getUrl());
         long now = System.currentTimeMillis();
+        String suffix = fileAttribute.getSuffix();
+        boolean isHtml = suffix.equalsIgnoreCase("xls") || suffix.equalsIgnoreCase("xlsx");
+        String pdfName = md5 + "." + (isHtml ? "html" : "pdf");
+        log.info("文件类型" + fileAttribute.getStorageType());
+
         log.info("计算MD5成功，共耗时：" + ((now - old) / 1000.0) + "秒");
         if (StorageType.URL == fileAttribute.getStorageType()) {//只有url的才需要获取md5
             if (!containConvertedFiles(pdfName)) {
@@ -221,6 +248,7 @@ public class CaffeineCache {
                     log.info("{} 文件已经转换.", pdfName);
                 }
                 log.info("{} 文件已经转换.", pdfName);
+                cacheMdPdf.setMd5(md5);
             }
         }
         log.info("正在转换的任务还有:{} 个.", current.size());

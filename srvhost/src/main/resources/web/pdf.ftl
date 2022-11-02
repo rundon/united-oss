@@ -18,15 +18,6 @@
     </style>
 </head>
 <body>
-<#if pdfUrl?contains("http://") || pdfUrl?contains("https://")>
-    <#assign finalUrl="${pdfUrl}">
-<#else>
-    <#if certification=="none">
-        <#assign finalUrl="/preview/"+"${pdfUrl}">
-    <#else>
-        <#assign finalUrl="/pcms/"+"${pdfUrl}">
-    </#if>
-</#if>
 <iframe src="" width="100%" frameborder="0"></iframe>
 <#if disableSwitch==false>
     <img src="images/jpg.svg" width="63" height="63"
@@ -36,8 +27,7 @@
 </body>
 <script src="js/watermark.js" type="text/javascript"></script>
 <script type="text/javascript">
-    document.getElementsByTagName('iframe')[0].src = "pdfjs/web/viewer.html?file=" + encodeURIComponent('${finalUrl}') + "&disabledownload=${pdfDownloadDisable}";
-    document.getElementsByTagName('iframe')[0].height = document.documentElement.clientHeight - 10;
+
     /**
      * 页面变化调整高度
      */
@@ -58,6 +48,18 @@
 
     /*初始化水印*/
     window.onload = function () {
+        debugger
+        var str = document.URL;
+        var pdfUrl="${pdfUrl}";
+        var finalUrl;
+        if(pdfUrl.indexOf("http://")!=-1||pdfUrl.indexOf("https://")!=-1){
+            finalUrl=pdfUrl;
+        }else{
+            finalUrl="/preview/"+pdfUrl;
+        }
+        console.log(finalUrl);
+        document.getElementsByTagName('iframe')[0].src = "pdfjs/web/viewer.html?file=" + encodeURIComponent(finalUrl) + "&disabledownload=${pdfDownloadDisable}"+"&timestamp="+new Date().getTime();
+        document.getElementsByTagName('iframe')[0].height = document.documentElement.clientHeight - 10;
         var watermarkTxt = '${watermarkTxt}';
         if (watermarkTxt !== '') {
             watermark.init({

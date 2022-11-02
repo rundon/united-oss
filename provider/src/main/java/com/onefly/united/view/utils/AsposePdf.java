@@ -1,12 +1,9 @@
 package com.onefly.united.view.utils;
 
-import com.aspose.cells.FileFormatType;
-import com.aspose.cells.HtmlSaveOptions;
-import com.aspose.cells.Workbook;
+import com.aspose.cells.*;
 import com.aspose.slides.Presentation;
 import com.aspose.slides.SaveFormat;
 import com.aspose.words.Document;
-import com.aspose.words.License;
 import com.aspose.words.PdfCompliance;
 import com.aspose.words.PdfSaveOptions;
 
@@ -114,6 +111,24 @@ public class AsposePdf {
         }
         long old = System.currentTimeMillis();
         Workbook wb = new Workbook(xlsPath);// 原始excel路径
+        Worksheet worksheet = wb.getWorksheets().get(0);
+        Style style = wb.createStyle();
+        style.setTextWrapped(true);
+        style.setBorder(BorderType.BOTTOM_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.LEFT_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.RIGHT_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.TOP_BORDER, CellBorderType.THIN, Color.getBlack());
+        worksheet.autoFitColumns();
+        worksheet.autoFitRows();
+        Cells cells = worksheet.getCells();
+        int col = cells.getColumns().getCount();
+        int row = cells.getRows().getCount();
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                Cell cell = cells.get(i, j);
+                cell.setStyle(style);
+            }
+        }
         HtmlSaveOptions options = new HtmlSaveOptions();
         options.setAddTooltipText(true);
         wb.save(pdfPath, options);
@@ -122,9 +137,11 @@ public class AsposePdf {
     }
 
     public static void main(String[] args) throws Exception {
-        doc2pdf("E:/data/error.doc", "E:/data/8.pdf");
-       // ppt2pdf("E:/data/error.pptx","E:/data/p.pdf");
-        //exe2html("D:/pdf/6.xlsx","D:/pdf/6.html");
+        long start = System.currentTimeMillis();
+        // doc2pdf("F:/error.docx", "F:/opertion.pdf");
+        // System.out.println("时间:"+(System.currentTimeMillis()-start)/1000);
+        // ppt2pdf("E:/data/error.pptx","E:/data/p.pdf");
+        ppt2pdf("F:/07f5c4aa9f7d482f808f729236b4c70a.pptx","F:/fuck.pdf");
     }
 
 }

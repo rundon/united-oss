@@ -9,10 +9,7 @@ import com.onefly.united.view.filter.TrustHostFilter;
 import com.onefly.united.view.filter.WatermarkConfigFilter;
 import com.onefly.united.view.service.cache.CacheService;
 import com.onefly.united.view.service.cache.impl.CacheServiceRedisImpl;
-import io.netty.channel.nio.NioEventLoopGroup;
-import org.apache.commons.lang3.StringUtils;
 import org.icepdf.ri.util.FontPropertiesManager;
-import org.redisson.client.codec.Codec;
 import org.redisson.config.Config;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,7 +17,6 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.util.ClassUtils;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashSet;
@@ -35,39 +31,6 @@ import java.util.concurrent.Executors;
 @EnableConfigurationProperties({KkViewProperties.class, RedisProperties.class})
 @Import({WebConfig.class, RFCConfig.class})
 public class KkViewConfig {
-
-    // TODO: 2020/12/4 0004 需要支持集群的redis
-    @Bean
-    public Config config(RedisProperties redisProperties) throws Exception {
-        Config config = new Config();
-        config.useSingleServer().setAddress(redisProperties.getHost() + ":" + redisProperties.getPort())
-                .setDatabase(redisProperties.getDatabase())
-                .setTimeout((int) redisProperties.getTimeout().toMillis())
-                .setConnectionMinimumIdleSize(10)
-                .setConnectionPoolSize(64)
-                .setDnsMonitoring(false)
-                .setDnsMonitoringInterval(5000)
-                .setSubscriptionConnectionMinimumIdleSize(1)
-                .setSubscriptionConnectionPoolSize(50)
-                .setSubscriptionsPerConnection(5)
-                .setFailedAttempts(3)
-                .setRetryAttempts(3)
-                .setRetryInterval(1500)
-                .setReconnectionTimeout(3000)
-                .setTimeout(3000)
-                .setConnectTimeout(10000)
-                .setIdleConnectionTimeout(10000)
-                .setPingTimeout(1000);
-        if (StringUtils.isNotBlank(redisProperties.getPassword())) {
-            config.useSingleServer().setPassword(redisProperties.getPassword());
-        }
-        Codec codec = (Codec) ClassUtils.forName("org.redisson.codec.JsonJacksonCodec", ClassUtils.getDefaultClassLoader()).newInstance();
-        config.setCodec(codec);
-        config.setThreads(4);
-        config.setEventLoopGroup(new NioEventLoopGroup());
-        config.setUseLinuxNativeEpoll(false);
-        return config;
-    }
 
     @Bean
     public CacheService cacheServiceRedisImpl(Config config) {

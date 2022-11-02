@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,5 +38,17 @@ public class OnlinePreviewController {
             model.addAttribute("fileTitle", name);
         }
         return sysPreviewService.onlinePreviewByUrl(url, model, req);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "cleanPreview")
+    public String cleanPreview(@RequestParam("url") String url, HttpServletRequest req) throws Exception {
+        return sysPreviewService.cleanPreview(url);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "cleanPreviewById")
+    public String cleanPreviewById(@RequestParam("id") String id, HttpServletRequest req) throws Exception {
+        return sysPreviewService.cleanPreviewById(id, req);
     }
 }

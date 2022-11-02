@@ -13,6 +13,7 @@
         <spring-boot.version>2.3.6.RELEASE</spring-boot.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <redisson.version>3.17.7</redisson.version>
     </properties>
     <dependencies>
         <!--spring-cloud-starter-->
@@ -42,18 +43,17 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson</artifactId>
-            <version>3.2.0</version>
-        </dependency>
         <!--test-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>${redisson.version}</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

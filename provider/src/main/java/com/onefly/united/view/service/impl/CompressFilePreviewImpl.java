@@ -7,13 +7,11 @@ import com.onefly.united.view.model.StorageType;
 import com.onefly.united.view.service.FilePreview;
 import com.onefly.united.view.service.cache.caffeine.CaffeineCache;
 import com.onefly.united.view.utils.DownloadUtils;
-import com.onefly.united.view.utils.FileMD5Util;
 import com.onefly.united.view.utils.FileUtils;
 import com.onefly.united.view.utils.ZipReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import java.io.IOException;
@@ -64,7 +62,7 @@ public class CompressFilePreviewImpl implements FilePreview {
                 fileTree = zipReader.read7zFile(filePath, fileName);
             }
             if (fileTree != null && !"null".equals(fileTree) && kkViewProperties.getCache().isEnabled()) {
-                caffeineCache.addConvertedFile(fileName, fileTree,null);
+                caffeineCache.addConvertedFile(fileName, fileTree, null);
             }
         } else {
             fileTree = caffeineCache.getConvertedFile(fileName);
