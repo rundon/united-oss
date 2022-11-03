@@ -35,6 +35,8 @@ class ResourceServerConfigurer extends ResourceServerConfigurerAdapter {
                 .accessDeniedHandler(accessDeniedHandler())
                 .authenticationEntryPoint(authenticationEntryPoint())
                 .and()
+                .headers().frameOptions().sameOrigin()
+                .and()
                 .antMatcher("/**")
                 .authorizeRequests()
                 .antMatchers("/actuator/**",
@@ -43,9 +45,12 @@ class ResourceServerConfigurer extends ResourceServerConfigurerAdapter {
                         "/bootstrap-table/**",
                         "/css/**",
                         "/gitalk/**",
+                        "/fonts/**",
                         "/images/**",
                         "/js/**",
                         "/pdfjs/**",
+                        "/libs/**",
+                        "/plugins/**",
                         "/plyr/**",
                         "/file/**").permitAll()
                 .anyRequest().authenticated()

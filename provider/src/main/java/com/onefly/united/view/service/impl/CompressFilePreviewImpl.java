@@ -22,8 +22,7 @@ import java.io.IOException;
  */
 @Service
 public class CompressFilePreviewImpl implements FilePreview {
-    @Autowired
-    private FileUtils fileUtils;
+
     @Autowired
     private DownloadUtils downloadUtils;
     @Autowired

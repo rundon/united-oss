@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Slf4j
 @Controller
-@RequestMapping(value = "preview")
 public class OnlinePreviewController {
 
     @Autowired

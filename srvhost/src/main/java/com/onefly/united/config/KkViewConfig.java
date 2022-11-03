@@ -50,8 +50,8 @@ public class KkViewConfig {
     @Bean
     public FilterRegistrationBean getBaseUrlFilter() {
         Set<String> filterUri = new HashSet<>();
-        filterUri.add("/preview/onlinePreview");
-        filterUri.add("/preview/onlinePreviewById");
+        filterUri.add("/onlinePreview");
+        filterUri.add("/onlinePreviewById");
         BaseUrlFilter filter = new BaseUrlFilter();
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(filter);
@@ -62,8 +62,8 @@ public class KkViewConfig {
     @Bean
     public FilterRegistrationBean getWatermarkConfigFilter(KkViewProperties kkViewProperties) {
         Set<String> filterUri = new HashSet<>();
-        filterUri.add("/preview/onlinePreview");
-        filterUri.add("/preview/onlinePreviewById");
+        filterUri.add("/onlinePreview");
+        filterUri.add("/onlinePreviewById");
         WatermarkConfigFilter filter = new WatermarkConfigFilter(kkViewProperties);
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(filter);
@@ -74,8 +74,8 @@ public class KkViewConfig {
     @Bean
     public FilterRegistrationBean getTrustHostFilter(KkViewProperties kkViewProperties) {
         Set<String> filterUri = new HashSet<>();
-        filterUri.add("/preview/onlinePreview");
-        filterUri.add("/preview/onlinePreviewById");
+        filterUri.add("/onlinePreview");
+        filterUri.add("/onlinePreviewById");
         TrustHostFilter filter = new TrustHostFilter(kkViewProperties);
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(filter);
