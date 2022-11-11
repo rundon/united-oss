@@ -19,7 +19,6 @@ import org.springframework.jmx.support.RegistrationPolicy;
  */
 @Configuration
 @Import(FdfsClientConfig.class)
-@EnableMBeanExport(registration = RegistrationPolicy.IGNORE_EXISTING)
 public class FastDFSImport {
 
 }

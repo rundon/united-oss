@@ -75,4 +75,10 @@ public abstract class AbstractCloudStorageService {
      */
     public abstract String uploadSuffix(InputStream inputStream, String suffix);
 
+    /**
+     * 分块上传
+     * @param inputStream
+     * @return
+     */
+    public abstract String uploadBlock(InputStream inputStream);
 }

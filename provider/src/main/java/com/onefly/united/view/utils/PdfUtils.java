@@ -28,7 +28,7 @@ public class PdfUtils {
     @Autowired
     private FileUtils fileUtils;
     @Autowired
-    private ExecutorService executorService;
+    private ExecutorService myExecutor;
     @Autowired
     private KkViewProperties kkViewProperties;
     @Autowired
@@ -74,8 +74,8 @@ public class PdfUtils {
             callables.add(new CapturePage(document, i, imageFilePath));
             imageUrls.add(urlPrefix + "/" + i + ".jpg");
         }
-        executorService.invokeAll(callables);
-        executorService.submit(new DocumentCloser(document)).get();
+        myExecutor.invokeAll(callables);
+        myExecutor.submit(new DocumentCloser(document)).get();
         caffeineCache.addConvertedPdfImage(pdfFilePath.replaceFirst(kkViewProperties.getFileSaveDir(), ""), pages);
         return imageUrls;
     }

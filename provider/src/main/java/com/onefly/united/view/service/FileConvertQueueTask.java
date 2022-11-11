@@ -6,12 +6,12 @@ import com.onefly.united.view.service.cache.CacheService;
 import com.onefly.united.view.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ExtendedModelMap;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by kl on 2018/1/19.
@@ -28,18 +28,21 @@ public class FileConvertQueueTask {
 
     private final FileUtils fileUtils;
 
+    private final  ExecutorService myExecutor;
+
     public FileConvertQueueTask(FilePreviewFactory previewFactory,
                                 CacheService cacheService,
-                                FileUtils fileUtils) {
+                                FileUtils fileUtils,
+                                ExecutorService myExecutor) {
         this.previewFactory = previewFactory;
         this.cacheService = cacheService;
         this.fileUtils=fileUtils;
+        this.myExecutor=myExecutor;
     }
 
     @PostConstruct
     public void startTask(){
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-        executorService.submit(new ConvertTask(previewFactory, cacheService, fileUtils));
+        myExecutor.submit(new ConvertTask(previewFactory, cacheService, fileUtils));
         logger.info("队列处理文件转换任务启动完成 ");
     }
 

@@ -53,4 +53,9 @@ public class LocalCloudStorageService extends AbstractCloudStorageService {
     public String uploadSuffix(InputStream inputStream, String suffix) {
         return upload(inputStream, getPath(config.getLocalPrefix(), suffix));
     }
+
+    @Override
+    public String uploadBlock(InputStream inputStream) {
+        return null;
+    }
 }

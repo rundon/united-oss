@@ -75,7 +75,8 @@ public class SysOssServiceImpl extends BaseServiceImpl<SysOssDao, SysOssEntity> 
     }
 
     @Override
-    public CheckFileDto checkFileMd5(String md5) throws IOException {
+    public CheckFileDto
+                                                                                                                                                                                checkFileMd5(String md5) throws IOException {
         Object processingObj = redisUtils.hGet(Constants.FILE_UPLOAD_STATUS, md5);
         if (processingObj == null) {
             return CheckFileDto.builder().resultStatus(ResultStatus.NO_HAVE).build();

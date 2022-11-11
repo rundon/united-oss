@@ -73,4 +73,9 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
     public String uploadSuffix(InputStream inputStream, String suffix) {
         return upload(inputStream, getPath(config.getMinioPrefix(), suffix));
     }
+
+    @Override
+    public String uploadBlock(InputStream inputStream) {
+        return null;
+    }
 }

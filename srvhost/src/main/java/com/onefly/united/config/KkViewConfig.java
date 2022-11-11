@@ -83,7 +83,7 @@ public class KkViewConfig {
         return registrationBean;
     }
 
-    @Bean
+    @Bean("myExecutor")
     public ExecutorService executorService() {
         // read/store the font cache.
         FontPropertiesManager.getInstance().loadOrReadSystemFonts();

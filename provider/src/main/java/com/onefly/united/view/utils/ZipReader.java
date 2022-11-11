@@ -40,16 +40,16 @@ public class ZipReader {
 
     private final FileUtils fileUtils;
 
-    private final ExecutorService executorService;
+    private final ExecutorService myExecutor;
 
     private final KkViewProperties kkViewProperties;
 
     private final Rar5Utils rar5Utils;
 
-    public ZipReader(FileUtils fileUtils, KkViewProperties kkViewProperties, ExecutorService executorService, Rar5Utils rar5Utils) {
+    public ZipReader(FileUtils fileUtils, KkViewProperties kkViewProperties, ExecutorService myExecutor, Rar5Utils rar5Utils) {
         this.fileUtils = fileUtils;
         this.kkViewProperties = kkViewProperties;
-        this.executorService = executorService;
+        this.myExecutor = myExecutor;
         this.rar5Utils = rar5Utils;
     }
 
@@ -88,7 +88,7 @@ public class ZipReader {
                 appender.put(childName, node);
             }
             // 开启新的线程处理文件解压
-            executorService.submit(new ZipExtractorWorker(entriesToBeExtracted, zipFile, filePath));
+            myExecutor.submit(new ZipExtractorWorker(entriesToBeExtracted, zipFile, filePath));
             return new ObjectMapper().writeValueAsString(appender.get(""));
         } catch (Exception e) {
             e.printStackTrace();
@@ -174,7 +174,7 @@ public class ZipReader {
                 addNodes(appender, parentName, node);
                 appender.put(childName, node);
             }
-            executorService.submit(new RarExtractorWorker(headersToBeExtracted, archive, filePath));
+            myExecutor.submit(new RarExtractorWorker(headersToBeExtracted, archive, filePath));
             return new ObjectMapper().writeValueAsString(appender.get(""));
         } catch (RarException | IOException e) {
             if (e instanceof RarException) {
@@ -285,7 +285,7 @@ public class ZipReader {
                 appender.put(childName, node);
             }
             // 开启新的线程处理文件解压
-            executorService.submit(new SevenZExtractorWorker(entriesToBeExtracted, filePath));
+            myExecutor.submit(new SevenZExtractorWorker(entriesToBeExtracted, filePath));
             return new ObjectMapper().writeValueAsString(appender.get(""));
         } catch (IOException e) {
             e.printStackTrace();

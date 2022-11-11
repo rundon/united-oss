@@ -8,7 +8,7 @@
 
 package com.onefly.united.oss.cloud;
 
-import com.github.tobato.fastdfs.domain.StorePath;
+import com.github.tobato.fastdfs.domain.fdfs.StorePath;
 import com.github.tobato.fastdfs.service.DefaultGenerateStorageClient;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
@@ -57,5 +57,10 @@ public class FastDFSCloudStorageService extends AbstractCloudStorageService {
     @Override
     public String uploadSuffix(InputStream inputStream, String suffix) {
         return upload(inputStream, suffix);
+    }
+
+    @Override
+    public String uploadBlock(InputStream inputStream) {
+        return null;
     }
 }

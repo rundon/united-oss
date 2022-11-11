@@ -39,7 +39,7 @@ public class AsposeListener {
 
     public static final String OFFICE_PREVIEW_TYPE_ALL_IMAGES = "allImages";
 
-    @Async
+    @Async("myExecutor")
     @EventListener
     public String office2pdf(AsposeDto asposeDto) {
         String result = "";
