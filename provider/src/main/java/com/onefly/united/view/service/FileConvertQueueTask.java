@@ -7,6 +7,7 @@ import com.onefly.united.view.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ExtendedModelMap;
 
@@ -28,12 +29,12 @@ public class FileConvertQueueTask {
 
     private final FileUtils fileUtils;
 
-    private final  ExecutorService myExecutor;
+    private final ThreadPoolTaskExecutor myExecutor;
 
     public FileConvertQueueTask(FilePreviewFactory previewFactory,
                                 CacheService cacheService,
                                 FileUtils fileUtils,
-                                ExecutorService myExecutor) {
+                                ThreadPoolTaskExecutor myExecutor) {
         this.previewFactory = previewFactory;
         this.cacheService = cacheService;
         this.fileUtils=fileUtils;

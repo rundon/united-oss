@@ -16,6 +16,7 @@ import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
@@ -40,13 +41,13 @@ public class ZipReader {
 
     private final FileUtils fileUtils;
 
-    private final ExecutorService myExecutor;
+    private final ThreadPoolTaskExecutor myExecutor;
 
     private final KkViewProperties kkViewProperties;
 
     private final Rar5Utils rar5Utils;
 
-    public ZipReader(FileUtils fileUtils, KkViewProperties kkViewProperties, ExecutorService myExecutor, Rar5Utils rar5Utils) {
+    public ZipReader(FileUtils fileUtils, KkViewProperties kkViewProperties, ThreadPoolTaskExecutor myExecutor, Rar5Utils rar5Utils) {
         this.fileUtils = fileUtils;
         this.kkViewProperties = kkViewProperties;
         this.myExecutor = myExecutor;

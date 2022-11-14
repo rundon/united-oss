@@ -83,14 +83,6 @@ public class KkViewConfig {
         return registrationBean;
     }
 
-    @Bean("myExecutor")
-    public ExecutorService executorService() {
-        // read/store the font cache.
-        FontPropertiesManager.getInstance().loadOrReadSystemFonts();
-        int process = 2 * Runtime.getRuntime().availableProcessors() + 1;
-        return Executors.newFixedThreadPool(process);
-    }
-
     @Bean("pptlicense")
     public com.aspose.slides.License pptlicense() throws Exception {
         String license = "<License>\n" +

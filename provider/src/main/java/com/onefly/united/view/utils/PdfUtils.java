@@ -9,6 +9,7 @@ import org.icepdf.core.pobjects.Page;
 import org.icepdf.core.util.GraphicsRenderingHints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -28,7 +29,7 @@ public class PdfUtils {
     @Autowired
     private FileUtils fileUtils;
     @Autowired
-    private ExecutorService myExecutor;
+    private ThreadPoolTaskExecutor myExecutor;
     @Autowired
     private KkViewProperties kkViewProperties;
     @Autowired
@@ -68,13 +69,11 @@ public class PdfUtils {
         }
         // create a list of callables.
         int pages = document.getNumberOfPages();
-        java.util.List<Callable<Void>> callables = new ArrayList<Callable<Void>>(pages);
         for (int i = 0; i < pages; i++) {
             String imageFilePath = folder + File.separator + i + ".jpg";
-            callables.add(new CapturePage(document, i, imageFilePath));
+            myExecutor.submit(new CapturePage(document, i, imageFilePath)).get();
             imageUrls.add(urlPrefix + "/" + i + ".jpg");
         }
-        myExecutor.invokeAll(callables);
         myExecutor.submit(new DocumentCloser(document)).get();
         caffeineCache.addConvertedPdfImage(pdfFilePath.replaceFirst(kkViewProperties.getFileSaveDir(), ""), pages);
         return imageUrls;
