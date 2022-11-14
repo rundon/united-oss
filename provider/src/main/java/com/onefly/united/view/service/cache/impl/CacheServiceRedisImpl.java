@@ -69,6 +69,30 @@ public class CacheServiceRedisImpl implements CacheService {
     }
 
     @Override
+    public void putRunCache(String key, String file) {
+        RMapCache<String, String> RunCache = redissonClient.getMapCache(TASK_CURRENT_RUNNING);
+        RunCache.putIfAbsent(key, file);
+    }
+
+    @Override
+    public boolean checkRunCache(String key) {
+        RMapCache<String, String> RunCache = redissonClient.getMapCache(TASK_CURRENT_RUNNING);
+        return RunCache.containsKey(key);
+    }
+
+    @Override
+    public void cleanRunCache(String key) {
+        RMapCache<String, String> RunCache = redissonClient.getMapCache(TASK_CURRENT_RUNNING);
+        System.out.println(RunCache.remove(key));
+    }
+
+    @Override
+    public void cleanRunCache() {
+        RMapCache<String, String> RunCache = redissonClient.getMapCache(TASK_CURRENT_RUNNING);
+        RunCache.delete();
+    }
+
+    @Override
     public String getMd5Cache(String key) {
         RMapCache<String, String> convertedList = redissonClient.getMapCache(FILE_PDF_MD5_KEY);
         return convertedList.get(key);

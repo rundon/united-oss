@@ -23,7 +23,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import java.io.File;
 
-import static com.onefly.united.view.service.cache.caffeine.CaffeineCache.current;
 
 @Slf4j
 @Component
@@ -92,7 +91,7 @@ public class AsposeListener {
             throw new RenException("转换错误:" + e.getMessage());
         } finally {
             if (StringUtils.isNotBlank(asposeDto.getMd5())) {
-                current.remove(asposeDto.getMd5());
+                caffeineCache.deleteRunning(asposeDto.getMd5());
                 log.info("移除正在进行任务：" + asposeDto.getMd5());
             }
         }

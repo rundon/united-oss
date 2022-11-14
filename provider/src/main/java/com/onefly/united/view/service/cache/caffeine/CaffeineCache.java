@@ -3,7 +3,6 @@ package com.onefly.united.view.service.cache.caffeine;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import com.google.common.collect.Maps;
 import com.onefly.united.view.config.KkViewProperties;
 import com.onefly.united.view.dto.CacheMdPdf;
 import com.onefly.united.view.model.FileAttribute;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -51,10 +49,6 @@ public class CaffeineCache {
      * 只缓存http的文件(zip情况太复杂)的MD5，如果已经转换则返回历史
      */
     public static LoadingCache<String, String> pdfMD5Cache;
-    /**
-     * 当前正在运行的
-     */
-    public static ConcurrentMap current = Maps.newConcurrentMap();
 
     /**
      * 初始化
@@ -104,6 +98,7 @@ public class CaffeineCache {
                     }
                 });
         pdfMD5Cache.putAll(cacheService.getMd5Cache());
+        cacheService.cleanRunCache();
     }
 
     /**
@@ -157,6 +152,14 @@ public class CaffeineCache {
             pdfMD5Cache.invalidate(md5);
             cacheService.cleanMd5Cache(md5);
         }
+    }
+
+    /**
+     * 删除正在运行的
+     * @param md5
+     */
+    public void deleteRunning(String md5) {
+        cacheService.cleanRunCache(md5);
     }
 
     /**
@@ -216,7 +219,7 @@ public class CaffeineCache {
         log.info("计算MD5成功，共耗时：" + ((now - old) / 1000.0) + "秒");
         if (StorageType.URL == fileAttribute.getStorageType()) {//只有url的才需要获取md5
             if (!containConvertedFiles(pdfName)) {
-                if (!current.containsKey(md5)) {
+                if (!cacheService.checkRunCache(md5)) {
                     if (StringUtils.isNotBlank(pdfMD5Cache.get(md5))) {
                         String md5Cache = pdfMD5Cache.get(md5);
                         if (containConvertedFiles(md5Cache)) {
@@ -224,14 +227,14 @@ public class CaffeineCache {
                             pdfName = md5Cache;
                             log.info(md5 + "文件已经存在,返回:" + pdfName);
                         } else {
-                            current.putIfAbsent(md5, pdfName);
+                            cacheService.putRunCache(md5, pdfName);
                             pdfMD5Cache.invalidate(md5);
                             cacheService.cleanMd5Cache(md5);
                             log.info(md5 + "文件虚假存在，删除!,重新转换");
                         }
                     } else {
                         if (!containConvertedFiles(pdfName)) {
-                            current.putIfAbsent(md5, pdfName);
+                            cacheService.putRunCache(md5, pdfName);
                             log.info(md5 + "文件不存在,重新转换");
                         }
                     }
@@ -241,7 +244,7 @@ public class CaffeineCache {
                 }
                 cacheMdPdf.setMd5(md5);
             } else {
-                if (current.containsKey(md5)) {
+                if (cacheService.checkRunCache(md5)) {
                     cacheMdPdf.setDoing(true);
                     log.info(md5 + "文件正在转换");
                 } else {
@@ -251,7 +254,7 @@ public class CaffeineCache {
                 cacheMdPdf.setMd5(md5);
             }
         }
-        log.info("正在转换的任务还有:{} 个.", current.size());
+        //log.info("正在转换的任务还有:{} 个.");
         cacheMdPdf.setPdfName(pdfName);
         return cacheMdPdf;
     }

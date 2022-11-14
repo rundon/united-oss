@@ -12,6 +12,7 @@ public interface CacheService {
     String FILE_PREVIEW_PDF_IMGS_KEY = "converted-preview-pdfimgs-file";
     String TASK_QUEUE_NAME = "convert-task";
     String FILE_PDF_MD5_KEY = "converted-pdf-md5";
+    String TASK_CURRENT_RUNNING = "current_running";
 
     void putPDFCache(String key, String value);
 
@@ -27,6 +28,14 @@ public interface CacheService {
 
     ///文件MD5 pdf名
     void putMd5Cache(String key, String value);
+    //存入正在运行的
+    void putRunCache(String key,String file);
+    //判断是否正在转换
+    boolean checkRunCache(String key);
+    //删除正在转换
+    void cleanRunCache(String key);
+    ///清除所有
+    void cleanRunCache();
 
     String getMd5Cache(String key);
 

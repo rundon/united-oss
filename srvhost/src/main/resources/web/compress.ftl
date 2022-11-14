@@ -28,14 +28,14 @@
                  v-on:click="openWindows(item.directory,item.childList,item.fileName,item.fileKey,item.originName,item.parentFileName)"
                  :title="item.originName">
                 <div :class="{'doc-img':true,
-                'doc-large-img': (item.originName.indexOf('.jpg') != -1||item.originName.indexOf('.png') != -1),
-                'doc-large-word':item.originName.indexOf('.doc') != -1,
-                'doc-large-xls':item.originName.indexOf('.xls') != -1,
-                'doc-large-pdf':item.originName.indexOf('.pdf') != -1,
-                'doc-large-ppt':item.originName.indexOf('.ppt') != -1,
-                'doc-large-zip':(item.originName.indexOf('.zip') != -1||item.originName.indexOf('.rar') != -1||item.originName.indexOf('.7z') != -1||item.originName.indexOf('.jar') != -1||item.originName.indexOf('.gzip') != -1),
-                'doc-large-txt':item.originName.indexOf('.txt') != -1,
-                'doc-large-html':(item.originName.indexOf('.html')!=-1||item.originName.indexOf('.js')!= -1||item.originName.indexOf('.css') != -1),
+                'doc-large-img': (item.originName.toLowerCase().indexOf('.jpg') != -1||item.originName.toLowerCase().indexOf('.png') != -1),
+                'doc-large-word':item.originName.toLowerCase().indexOf('.doc') != -1,
+                'doc-large-xls':item.originName.toLowerCase().indexOf('.xls') != -1,
+                'doc-large-pdf':item.originName.toLowerCase().indexOf('.pdf') != -1,
+                'doc-large-ppt':item.originName.toLowerCase().indexOf('.ppt') != -1,
+                'doc-large-zip':(item.originName.toLowerCase().indexOf('.zip') != -1||item.originName.toLowerCase().indexOf('.rar') != -1||item.originName.toLowerCase().indexOf('.7z') != -1||item.originName.toLowerCase().indexOf('.jar') != -1||item.originName.toLowerCase().indexOf('.gzip') != -1),
+                'doc-large-txt':item.originName.toLowerCase().indexOf('.txt') != -1,
+                'doc-large-html':(item.originName.toLowerCase().indexOf('.html')!=-1||item.originName.toLowerCase().indexOf('.js')!= -1||item.originName.toLowerCase().indexOf('.css') != -1),
                 'doc-large-file':item.directory}"></div>
                 <div class="doc-name">
                     <a>{{item.originName}}</a>
