@@ -119,43 +119,6 @@ public class LocalCloudStorageService extends AbstractCloudStorageService {
     }
 
     /**
-     * 检查并修改文件上传进度
-     *
-     * @param param
-     * @return
-     * @throws IOException
-     */
-    private boolean checkAndSetUploadProgress(MultipartFileParamDto param) throws IOException {
-        boolean isOk = true;
-        FileUploadResult processingObj = (FileUploadResult) redisUtils.hGet(Constants.ASYNC_UPLOADER, param.getMd5());
-        if (processingObj == null) {
-            processingObj = new FileUploadResult();
-            processingObj.setFileId(param.getMd5());
-            processingObj.setChunks(param.getChunks());
-            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
-        }
-        if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk())) {
-            redisUtils.hSet(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk(), true);
-        }
-        for (int i = 1; i <= param.getChunks(); i++) {
-            if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i)) {
-                log.info("第" + i + "块未上传。");
-                isOk = false;
-                break;
-            }
-        }
-        if (isOk) {
-            processingObj.setStatus(true);
-            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
-            for (int i = 1; i <= param.getChunks(); i++) {
-                redisUtils.hDel(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i);
-            }
-        }
-        return isOk;
-    }
-
-
-    /**
      * 删除临时文件
      *
      * @param f
