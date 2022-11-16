@@ -8,6 +8,8 @@
 
 package com.onefly.united.oss.cloud;
 
+import com.onefly.united.common.redis.RedisUtils;
+import com.onefly.united.oss.dto.MultipartFileParamDto;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
@@ -32,9 +34,9 @@ public class QcloudCloudStorageService extends AbstractCloudStorageService {
     private COSCredentials credentials;
     private ClientConfig clientConfig;
 
-    public QcloudCloudStorageService(CloudStorageConfig config){
+    public QcloudCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils){
         this.config = config;
-
+        this.redisUtils=redisUtils;
         //初始化
         init();
     }
@@ -85,7 +87,7 @@ public class QcloudCloudStorageService extends AbstractCloudStorageService {
     }
 
     @Override
-    public String uploadBlock(InputStream inputStream) {
+    public String uploadBlock(MultipartFileParamDto param, String suffix) {
         return null;
     }
 }

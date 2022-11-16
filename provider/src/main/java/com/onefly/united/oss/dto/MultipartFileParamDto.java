@@ -15,14 +15,6 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "分块上传大文件")
 public class MultipartFileParamDto {
 
-    // 用户id
-    @ApiModelProperty(value = "归属id")
-    @NotNull(message = "归属id", groups = DefaultGroup.class)
-    private Long belongId;
-    //任务ID
-    @ApiModelProperty(value = "tableName不能为空")
-    @NotNull(message = "tableName不能为空", groups = DefaultGroup.class)
-    private String tableName;
     //总分片数量
     private int chunks;
     //当前为第几块分片
@@ -35,6 +27,10 @@ public class MultipartFileParamDto {
     @ApiModelProperty(value = "文件")
     @NotNull(message = "文件", groups = DefaultGroup.class)
     private MultipartFile file;
+
     // MD5
+    @NotNull(message = "文件的MD5不能为空", groups = DefaultGroup.class)
     private String md5;
+
+    private long total;
 }

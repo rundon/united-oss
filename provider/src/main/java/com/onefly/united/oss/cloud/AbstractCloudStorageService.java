@@ -8,7 +8,9 @@
 
 package com.onefly.united.oss.cloud;
 
+import com.onefly.united.common.redis.RedisUtils;
 import com.onefly.united.common.utils.DateUtils;
+import com.onefly.united.oss.dto.MultipartFileParamDto;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
@@ -21,9 +23,14 @@ import java.util.UUID;
  * @author Mark sunlightcs@gmail.com
  */
 public abstract class AbstractCloudStorageService {
+
+    public static long CHUNK_SIZE = 10485760;
+
     /** 云存储配置信息 */
     CloudStorageConfig config;
 
+    /** 保存上传信息 */
+    RedisUtils redisUtils;
     /**
      * 文件路径
      * @param prefix 前缀
@@ -77,8 +84,9 @@ public abstract class AbstractCloudStorageService {
 
     /**
      * 分块上传
-     * @param inputStream
+     * @param param
+     * @param suffix
      * @return
      */
-    public abstract String uploadBlock(InputStream inputStream);
+    public abstract String uploadBlock(MultipartFileParamDto param,String suffix);
 }

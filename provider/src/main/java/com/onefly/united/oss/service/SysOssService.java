@@ -1,8 +1,8 @@
 /**
  * Copyright (c) 2018 人人开源 All rights reserved.
- *
+ * <p>
  * https://www.renren.io
- *
+ * <p>
  * 版权所有，侵权必究！
  */
 
@@ -10,28 +10,33 @@ package com.onefly.united.oss.service;
 
 import com.onefly.united.common.page.PageData;
 import com.onefly.united.common.service.BaseService;
+import com.onefly.united.common.utils.Result;
 import com.onefly.united.oss.dto.CheckFileDto;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import com.onefly.united.oss.dto.SysOssDto;
 import com.onefly.united.oss.entity.SysOssEntity;
+import org.springframework.web.context.request.async.DeferredResult;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 /**
  * 文件上传
- * 
+ *
  * @author Mark sunlightcs@gmail.com
  */
 public interface SysOssService extends BaseService<SysOssEntity> {
 
-	PageData<SysOssEntity> page(Map<String, Object> params);
+    PageData<SysOssEntity> page(Map<String, Object> params);
 
-    SysOssDto insertOssEntity(InputStream inputStream, String originalFilename, long size);
+    SysOssDto insertOssEntity(String url, String originalFilename, long size);
 
     CheckFileDto checkFileMd5(String md5) throws IOException;
 
-    SysOssDto uploadFileByMappedByteBuffer(MultipartFileParamDto param) throws IOException;
+    /**
+     * 异步分块上传
+     * @param param
+     * @return
+     */
+    DeferredResult<Result<SysOssDto>> asyncUploader(MultipartFileParamDto param);
 }

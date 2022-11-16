@@ -12,7 +12,10 @@ import com.github.tobato.fastdfs.domain.fdfs.StorePath;
 import com.github.tobato.fastdfs.service.DefaultGenerateStorageClient;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
+import com.onefly.united.common.redis.RedisUtils;
 import com.onefly.united.common.utils.SpringContextUtils;
+import com.onefly.united.oss.dto.MultipartFileParamDto;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
@@ -28,8 +31,9 @@ public class FastDFSCloudStorageService extends AbstractCloudStorageService {
         defaultGenerateStorageClient = (DefaultGenerateStorageClient) SpringContextUtils.getBean("defaultGenerateStorageClient");
     }
 
-    public FastDFSCloudStorageService(CloudStorageConfig config){
+    public FastDFSCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils){
         this.config = config;
+        this.redisUtils=redisUtils;
     }
 
     @Override
@@ -60,7 +64,7 @@ public class FastDFSCloudStorageService extends AbstractCloudStorageService {
     }
 
     @Override
-    public String uploadBlock(InputStream inputStream) {
+    public String uploadBlock(MultipartFileParamDto param, String suffix) {
         return null;
     }
 }

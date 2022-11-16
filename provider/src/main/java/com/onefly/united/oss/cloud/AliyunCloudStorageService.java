@@ -11,6 +11,8 @@ package com.onefly.united.oss.cloud;
 import com.aliyun.oss.OSSClient;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
+import com.onefly.united.common.redis.RedisUtils;
+import com.onefly.united.oss.dto.MultipartFileParamDto;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -22,8 +24,9 @@ import java.io.InputStream;
  */
 public class AliyunCloudStorageService extends AbstractCloudStorageService {
 
-    public AliyunCloudStorageService(CloudStorageConfig config){
+    public AliyunCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils){
         this.config = config;
+        this.redisUtils=redisUtils;
     }
 
     @Override
@@ -56,7 +59,7 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
     }
 
     @Override
-    public String uploadBlock(InputStream inputStream) {
+    public String uploadBlock(MultipartFileParamDto param, String suffix) {
         return null;
     }
 }

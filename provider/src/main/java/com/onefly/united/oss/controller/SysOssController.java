@@ -11,7 +11,6 @@ package com.onefly.united.oss.controller;
 import com.google.gson.Gson;
 import com.onefly.united.common.annotation.LogOperation;
 import com.onefly.united.common.constant.Constant;
-import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.page.PageData;
 import com.onefly.united.common.utils.Result;
 import com.onefly.united.common.validator.ValidatorUtils;
@@ -28,14 +27,13 @@ import com.onefly.united.oss.group.QiniuGroup;
 import com.onefly.united.oss.service.SysOssService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.context.request.async.DeferredResult;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -51,6 +49,7 @@ import java.util.Map;
 public class SysOssController {
     @Autowired
     private SysOssService sysOssService;
+
     @Autowired
     private SysParamsService sysParamsService;
 
@@ -97,18 +96,6 @@ public class SysOssController {
         return new Result();
     }
 
-    @PostMapping("upload")
-    @ApiOperation(value = "上传文件")
-    @PreAuthorize("hasAuthority('sys:oss:all')")
-    public Result<SysOssDto> upload(@RequestParam("file") MultipartFile file) throws Exception {
-        if (file.isEmpty()) {
-            return new Result<SysOssDto>().error(ErrorCode.UPLOAD_FILE_EMPTY);
-        }
-        SysOssDto sysOssDto = sysOssService.insertOssEntity(file.getInputStream(), file.getOriginalFilename(), file.getSize());
-
-        return new Result<SysOssDto>().ok(sysOssDto);
-    }
-
     @DeleteMapping
     @ApiOperation(value = "删除")
     @LogOperation("删除")
@@ -120,18 +107,13 @@ public class SysOssController {
     }
 
     @ApiOperation("分块上传大文件")
-    @PostMapping("fragUpload")
-    public Result<SysOssDto> fragUpload(MultipartFileParamDto param, HttpServletRequest request) throws IOException {
+    @PostMapping("upload")
+    @PreAuthorize("hasAuthority('sys:oss:all')")
+    public DeferredResult<Result<SysOssDto>> fragUpload(MultipartFileParamDto param) throws IOException {
         ValidatorUtils.validateEntity(param, DefaultGroup.class);
-        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
-        SysOssDto sysOssDto = null;
-        if (isMultipart) {
-            sysOssDto = sysOssService.uploadFileByMappedByteBuffer(param);
-        } else {
-            sysOssDto = sysOssService.insertOssEntity(param.getFile().getInputStream(), param.getFile().getOriginalFilename()
-                    , param.getFile().getSize());
-        }
-        return new Result<SysOssDto>().ok(sysOssDto);
+        DeferredResult<Result<SysOssDto>> sysOssDto = sysOssService.asyncUploader(param);
+        //DeferredResult<SysOssDto> sysOssDto = sysOssService.uploadFileByMappedByteBuffer(param);
+        return sysOssDto;
     }
 
     /**
@@ -140,7 +122,7 @@ public class SysOssController {
      * @return
      */
     @ApiOperation("秒传判断，断点判断")
-    @RequestMapping(value = "fragUpload", method = RequestMethod.GET)
+    @GetMapping("upload")
     public Result<CheckFileDto> checkFileMd5(String md5) throws IOException {
         CheckFileDto checkFileDto = sysOssService.checkFileMd5(md5);
         return new Result<CheckFileDto>().ok(checkFileDto);

@@ -24,16 +24,16 @@
         </encoder>
     </appender>
 
-    <logger name="druid.sql.DataSource" level="TRACE"/>
+    <logger name="druid.sql.DataSource" level="WARN"/>
     <!--<logger name="druid.sql.Connection" level="TRACE"/>-->
-    <logger name="druid.sql.Statement" level="TRACE"/>
+    <logger name="druid.sql.Statement" level="WARN"/>
     <!--<logger name="druid.sql.ResultSet" level="TRACE"/>-->
-    <logger name="druid.sql" level="INFO"/>
+    <logger name="druid.sql" level="WARN"/>
 
-    <logger name="org.springframework.security" level="debug"/>
+    <logger name="org.springframework.security" level="WARN"/>
     <!--<logger name="com.netflix" level="debug"/>-->
 
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
 

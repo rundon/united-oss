@@ -8,6 +8,8 @@
 
 package com.onefly.united.oss.cloud;
 
+import com.onefly.united.common.redis.RedisUtils;
+import com.onefly.united.oss.dto.MultipartFileParamDto;
 import io.minio.MinioClient;
 import io.minio.errors.InvalidEndpointException;
 import io.minio.errors.InvalidPortException;
@@ -25,8 +27,9 @@ import java.io.InputStream;
 public class MinioCloudStorageService extends AbstractCloudStorageService {
     private MinioClient minioClient;
 
-    public MinioCloudStorageService(CloudStorageConfig config){
+    public MinioCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils){
         this.config = config;
+        this.redisUtils=redisUtils;
         //初始化
         init();
     }
@@ -75,7 +78,7 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
     }
 
     @Override
-    public String uploadBlock(InputStream inputStream) {
+    public String uploadBlock(MultipartFileParamDto param, String suffix) {
         return null;
     }
 }

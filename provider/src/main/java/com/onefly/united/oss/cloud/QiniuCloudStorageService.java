@@ -8,6 +8,8 @@
 
 package com.onefly.united.oss.cloud;
 
+import com.onefly.united.common.redis.RedisUtils;
+import com.onefly.united.oss.dto.MultipartFileParamDto;
 import com.qiniu.http.Response;
 import com.qiniu.storage.Configuration;
 import com.qiniu.storage.Region;
@@ -29,9 +31,9 @@ public class QiniuCloudStorageService extends AbstractCloudStorageService {
     private UploadManager uploadManager;
     private String token;
 
-    public QiniuCloudStorageService(CloudStorageConfig config){
+    public QiniuCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils){
         this.config = config;
-
+        this.redisUtils=redisUtils;
         //初始化
         init();
     }
@@ -78,7 +80,7 @@ public class QiniuCloudStorageService extends AbstractCloudStorageService {
     }
 
     @Override
-    public String uploadBlock(InputStream inputStream) {
+    public String uploadBlock(MultipartFileParamDto param, String suffix) {
         return null;
     }
 }
