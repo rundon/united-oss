@@ -11,10 +11,9 @@ package com.onefly.united.oss.cloud;
 import com.google.common.collect.Lists;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
+import com.onefly.united.oss.dto.CloudStore;
 import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
-import com.onefly.united.oss.dto.QcloudStore;
-import com.onefly.united.oss.dto.QiniuStore;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Client;
 import com.qiniu.http.Response;
@@ -90,7 +89,7 @@ public class QiniuCloudStorageService extends AbstractCloudStorageService {
 
     @Override
     public Object startBlock(MultipartFileParamDto param, String suffix) {
-        QiniuStore store = new QiniuStore();
+        CloudStore store = new CloudStore();
         String objectName = getPath(config.getQcloudPrefix(), suffix);
         ApiUploadV2InitUpload initUploadApi = new ApiUploadV2InitUpload(client);
         ApiUploadV2InitUpload.Request initUploadRequest = new ApiUploadV2InitUpload.Request(config.getQiniuPrefix(), token)
@@ -108,7 +107,7 @@ public class QiniuCloudStorageService extends AbstractCloudStorageService {
 
     @Override
     public void processingBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
-        QcloudStore store = (QcloudStore) processingObj.getStore();
+        CloudStore store = (CloudStore) processingObj.getStore();
         ApiUploadV2UploadPart uploadPartApi = new ApiUploadV2UploadPart(client);
         try {
             ApiUploadV2UploadPart.Request uploadPartRequest = new ApiUploadV2UploadPart.Request(config.getQiniuPrefix(), token, store.getUploadId(), param.getChunk())
@@ -127,7 +126,7 @@ public class QiniuCloudStorageService extends AbstractCloudStorageService {
         String url = null;
         // 获取上传的 part 信息
         Integer partNumberMarker = null;
-        QcloudStore store = (QcloudStore) processingObj.getStore();
+        CloudStore store = (CloudStore) processingObj.getStore();
         List<Map<String, Object>> listPartInfo = Lists.newArrayList();
         while (true) {
             ApiUploadV2ListParts listPartsApi = new ApiUploadV2ListParts(client);

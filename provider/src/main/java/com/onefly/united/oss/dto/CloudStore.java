@@ -9,7 +9,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class AliyunStore {
+public class CloudStore {
     private String uploadId;
     private String objectName;
 }

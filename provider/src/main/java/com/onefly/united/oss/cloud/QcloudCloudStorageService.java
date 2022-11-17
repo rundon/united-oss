@@ -11,9 +11,9 @@ package com.onefly.united.oss.cloud;
 import com.google.common.collect.Lists;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
+import com.onefly.united.oss.dto.CloudStore;
 import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
-import com.onefly.united.oss.dto.QcloudStore;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
@@ -88,7 +88,7 @@ public class QcloudCloudStorageService extends AbstractCloudStorageService {
 
     @Override
     public Object startBlock(MultipartFileParamDto param, String suffix) {
-        QcloudStore store = new QcloudStore();
+        CloudStore store = new CloudStore();
         COSClient client = new COSClient(credentials, clientConfig);
         String bucketName = config.getQcloudBucketName() + "-" + config.getQcloudAppId();
         String objectName = getPath(config.getQcloudPrefix(), suffix);
@@ -112,7 +112,7 @@ public class QcloudCloudStorageService extends AbstractCloudStorageService {
     public void processingBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
         COSClient client = new COSClient(credentials, clientConfig);
         String bucketName = config.getQcloudBucketName() + "-" + config.getQcloudAppId();
-        QcloudStore store = (QcloudStore) processingObj.getStore();
+        CloudStore store = (CloudStore) processingObj.getStore();
         try {
             UploadPartRequest uploadRequest = new UploadPartRequest().withBucketName(bucketName).
                     withUploadId(store.getUploadId()).withKey(store.getObjectName()).withPartNumber(param.getChunk()).
@@ -132,7 +132,7 @@ public class QcloudCloudStorageService extends AbstractCloudStorageService {
         String url = null;
         COSClient client = new COSClient(credentials, clientConfig);
         String bucketName = config.getQcloudBucketName() + "-" + config.getQcloudAppId();
-        QcloudStore store = (QcloudStore) processingObj.getStore();
+        CloudStore store = (CloudStore) processingObj.getStore();
         processingObj.setStatus(true);
         try {
             List<PartETag> partETags = Lists.newArrayList();

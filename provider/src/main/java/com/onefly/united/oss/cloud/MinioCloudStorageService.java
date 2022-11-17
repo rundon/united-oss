@@ -11,8 +11,8 @@ package com.onefly.united.oss.cloud;
 import com.google.common.collect.Lists;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
+import com.onefly.united.oss.dto.CloudStore;
 import com.onefly.united.oss.dto.FileUploadResult;
-import com.onefly.united.oss.dto.MinioStore;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import io.minio.*;
 import io.minio.messages.Part;
@@ -86,7 +86,7 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
 
     @Override
     public Object startBlock(MultipartFileParamDto param, String suffix) {
-        MinioStore store = new MinioStore();
+        CloudStore store = new CloudStore();
         String objectName = getPath(config.getAliyunPrefix(), suffix);
         try {
             String uploadId = minioClient.initMultiPartUpload(config.getMinioBucketName(), objectName);
@@ -101,7 +101,7 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
 
     @Override
     public void processingBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
-        MinioStore store = (MinioStore) processingObj.getStore();
+        CloudStore store = (CloudStore) processingObj.getStore();
         try {
             minioClient.uploadMultipart(config.getMinioBucketName(), store.getObjectName(), param.getFile().getInputStream()
                     , param.getFile().getSize(), store.getUploadId(), param.getChunk());
@@ -117,7 +117,7 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
         try {
             List<Part> parts = Lists.newArrayList();
             processingObj.setStatus(true);
-            MinioStore store = (MinioStore) processingObj.getStore();
+            CloudStore store = (CloudStore) processingObj.getStore();
             ListPartsResponse partResult = minioClient.listMultipart(config.getMinioBucketName(), store.getObjectName()
                     , 0, store.getUploadId());
             int partNumber = 1;

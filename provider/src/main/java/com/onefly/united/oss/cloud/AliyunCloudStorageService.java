@@ -15,7 +15,7 @@ import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.*;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
-import com.onefly.united.oss.dto.AliyunStore;
+import com.onefly.united.oss.dto.CloudStore;
 import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +73,7 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
     public Object startBlock(MultipartFileParamDto param, String suffix) {
         OSS ossClient = new OSSClientBuilder().build(config.getAliyunEndPoint(), config.getAliyunAccessKeyId(),
                 config.getAliyunAccessKeySecret());
-        AliyunStore store = new AliyunStore();
+        CloudStore store = new CloudStore();
         try {
             String objectName = getPath(config.getAliyunPrefix(), suffix);
             InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(config.getAliyunBucketName(), objectName);
@@ -102,7 +102,7 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
         OSS ossClient = new OSSClientBuilder().build(config.getAliyunEndPoint(), config.getAliyunAccessKeyId(),
                 config.getAliyunAccessKeySecret());
         try {
-            AliyunStore store = (AliyunStore) processingObj.getStore();
+            CloudStore store = (CloudStore) processingObj.getStore();
             log.info(param.getChunk() + ":开始上传,start:" + offset);
             // 跳过已经上传的分片。
             UploadPartRequest uploadPartRequest = new UploadPartRequest();
@@ -141,7 +141,7 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
         try {
             processingObj.setStatus(true);
             List<PartETag> partETags = new ArrayList<PartETag>();
-            AliyunStore store = (AliyunStore) processingObj.getStore();
+            CloudStore store = (CloudStore) processingObj.getStore();
             ListPartsRequest listPartsRequest = new ListPartsRequest(config.getAliyunBucketName(), store.getObjectName(), store.getUploadId());
             PartListing partListing = ossClient.listParts(listPartsRequest);
             int partCount = partListing.getParts().size();
