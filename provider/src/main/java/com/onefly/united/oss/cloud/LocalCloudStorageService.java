@@ -10,7 +10,6 @@ package com.onefly.united.oss.cloud;
 
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
-import com.onefly.united.common.redis.RedisUtils;
 import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import com.onefly.united.view.utils.Constants;
@@ -31,9 +30,8 @@ import java.nio.channels.FileChannel;
 @Slf4j
 public class LocalCloudStorageService extends AbstractCloudStorageService {
 
-    public LocalCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils) {
+    public LocalCloudStorageService(CloudStorageConfig config) {
         this.config = config;
-        this.redisUtils = redisUtils;
     }
 
     @Override
@@ -46,7 +44,6 @@ public class LocalCloudStorageService extends AbstractCloudStorageService {
         File file = new File(config.getLocalPath() + File.separator + path);
         try {
             FileUtils.copyToFile(inputStream, file);
-
         } catch (IOException e) {
             throw new RenException(ErrorCode.OSS_UPLOAD_FILE_ERROR, e, "");
         } finally {
@@ -116,6 +113,42 @@ public class LocalCloudStorageService extends AbstractCloudStorageService {
             }
         }
         return url;
+    }
+
+    /**
+     * 检查并修改文件上传进度
+     *
+     * @param param
+     * @return
+     * @throws IOException
+     */
+    public boolean checkAndSetUploadProgress(MultipartFileParamDto param) throws IOException {
+        boolean isOk = true;
+        FileUploadResult processingObj = (FileUploadResult) redisUtils.hGet(Constants.ASYNC_UPLOADER, param.getMd5());
+        if (processingObj == null) {
+            processingObj = new FileUploadResult();
+            processingObj.setFileId(param.getMd5());
+            processingObj.setChunks(param.getChunks());
+            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
+        }
+        if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk())) {
+            redisUtils.hSet(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk(), true);
+        }
+        for (int i = 1; i <= param.getChunks(); i++) {
+            if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i)) {
+                log.info("第" + i + "块未上传。");
+                isOk = false;
+                break;
+            }
+        }
+        if (isOk) {
+            processingObj.setStatus(true);
+            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
+            for (int i = 1; i <= param.getChunks(); i++) {
+                redisUtils.hDel(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i);
+            }
+        }
+        return isOk;
     }
 
     /**

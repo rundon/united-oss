@@ -1,14 +1,15 @@
 /**
  * Copyright (c) 2018 人人开源 All rights reserved.
- *
+ * <p>
  * https://www.renren.io
- *
+ * <p>
  * 版权所有，侵权必究！
  */
 
 package com.onefly.united.oss.cloud;
 
-import com.onefly.united.common.redis.RedisUtils;
+import com.onefly.united.common.exception.ErrorCode;
+import com.onefly.united.common.exception.RenException;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
@@ -18,8 +19,6 @@ import com.qcloud.cos.model.ObjectMetadata;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
 import com.qcloud.cos.region.Region;
-import com.onefly.united.common.exception.ErrorCode;
-import com.onefly.united.common.exception.RenException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,18 +33,17 @@ public class QcloudCloudStorageService extends AbstractCloudStorageService {
     private COSCredentials credentials;
     private ClientConfig clientConfig;
 
-    public QcloudCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils){
+    public QcloudCloudStorageService(CloudStorageConfig config) {
         this.config = config;
-        this.redisUtils=redisUtils;
         //初始化
         init();
     }
 
-    private void init(){
+    private void init() {
         //1、初始化用户身份信息(secretId, secretKey)
         credentials = new BasicCOSCredentials(config.getQcloudSecretId(), config.getQcloudSecretKey());
-    	
-    	//2、设置bucket的区域, COS地域的简称请参照 https://cloud.tencent.com/document/product/436/6224
+
+        //2、设置bucket的区域, COS地域的简称请参照 https://cloud.tencent.com/document/product/436/6224
         clientConfig = new ClientConfig(new Region(config.getQcloudRegion()));
     }
 
@@ -56,17 +54,17 @@ public class QcloudCloudStorageService extends AbstractCloudStorageService {
 
     @Override
     public String upload(InputStream inputStream, String path) {
-    	try {
+        try {
             COSClient client = new COSClient(credentials, clientConfig);
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(inputStream.available());
-            String bucketName = config.getQcloudBucketName() +"-"+ config.getQcloudAppId();
+            String bucketName = config.getQcloudBucketName() + "-" + config.getQcloudAppId();
             PutObjectRequest request = new PutObjectRequest(bucketName, path, inputStream, metadata);
             PutObjectResult result = client.putObject(request);
-            
+
             client.shutdown();
-            if(result.getETag() == null){
+            if (result.getETag() == null) {
                 throw new RenException(ErrorCode.OSS_UPLOAD_FILE_ERROR, "");
             }
         } catch (IOException e) {

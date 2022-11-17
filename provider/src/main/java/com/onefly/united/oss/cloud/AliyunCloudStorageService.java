@@ -1,8 +1,8 @@
 /**
  * Copyright (c) 2018 人人开源 All rights reserved.
- *
+ * <p>
  * https://www.renren.io
- *
+ * <p>
  * 版权所有，侵权必究！
  */
 
@@ -11,7 +11,6 @@ package com.onefly.united.oss.cloud;
 import com.aliyun.oss.OSSClient;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
-import com.onefly.united.common.redis.RedisUtils;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 
 import java.io.ByteArrayInputStream;
@@ -24,9 +23,8 @@ import java.io.InputStream;
  */
 public class AliyunCloudStorageService extends AbstractCloudStorageService {
 
-    public AliyunCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils){
+    public AliyunCloudStorageService(CloudStorageConfig config) {
         this.config = config;
-        this.redisUtils=redisUtils;
     }
 
     @Override
@@ -41,7 +39,7 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
         try {
             client.putObject(config.getAliyunBucketName(), path, inputStream);
             client.shutdown();
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RenException(ErrorCode.OSS_UPLOAD_FILE_ERROR, e, "");
         }
 

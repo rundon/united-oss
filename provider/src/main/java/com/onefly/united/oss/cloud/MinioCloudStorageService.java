@@ -1,20 +1,19 @@
 /**
  * Copyright (c) 2018 人人开源 All rights reserved.
- *
+ * <p>
  * https://www.renren.io
- *
+ * <p>
  * 版权所有，侵权必究！
  */
 
 package com.onefly.united.oss.cloud;
 
-import com.onefly.united.common.redis.RedisUtils;
+import com.onefly.united.common.exception.ErrorCode;
+import com.onefly.united.common.exception.RenException;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import io.minio.MinioClient;
 import io.minio.errors.InvalidEndpointException;
 import io.minio.errors.InvalidPortException;
-import com.onefly.united.common.exception.ErrorCode;
-import com.onefly.united.common.exception.RenException;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -27,14 +26,13 @@ import java.io.InputStream;
 public class MinioCloudStorageService extends AbstractCloudStorageService {
     private MinioClient minioClient;
 
-    public MinioCloudStorageService(CloudStorageConfig config, RedisUtils redisUtils){
+    public MinioCloudStorageService(CloudStorageConfig config) {
         this.config = config;
-        this.redisUtils=redisUtils;
         //初始化
         init();
     }
 
-    private void init(){
+    private void init() {
         try {
             minioClient = new MinioClient(config.getMinioEndPoint(), config.getMinioAccessKey(), config.getMinioSecretKey());
         } catch (InvalidEndpointException e) {

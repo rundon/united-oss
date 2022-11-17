@@ -32,5 +32,5 @@ public class MultipartFileParamDto {
     @NotNull(message = "文件的MD5不能为空", groups = DefaultGroup.class)
     private String md5;
 
-    private long total;
+    private Long total;
 }

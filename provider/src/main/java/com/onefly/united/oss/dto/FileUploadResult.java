@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 @ToString
@@ -25,4 +23,8 @@ public class FileUploadResult implements Serializable {
      * is finish upload file
      */
     private Boolean status = false;
+    /**
+     * 存储信息
+     */
+    private Object store;
 }

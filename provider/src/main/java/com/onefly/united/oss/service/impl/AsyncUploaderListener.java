@@ -31,7 +31,7 @@ public class AsyncUploaderListener {
     public void AsyncUploader(AsyncDeferred result) {
         MultipartFileParamDto param = result.getParam();
         String extension = FilenameUtils.getExtension(param.getName());
-        String url = OSSFactory.build().uploadBlock(param, extension);
+        String url = OSSFactory.build().syncUploadBlock(param, extension);
         DeferredResult<Result<SysOssDto>> deferredResult = result.getResult();
         if (StringUtils.isNotBlank(url)) {
             try {//为了防止异常导致死等待 必须有返回值

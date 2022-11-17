@@ -9,17 +9,17 @@
 package com.onefly.united.oss.cloud;
 
 import com.onefly.united.common.redis.RedisUtils;
+import com.onefly.united.common.redis.lock.IDistributedLockService;
 import com.onefly.united.common.utils.DateUtils;
-import com.onefly.united.oss.dto.FileUploadResult;
+import com.onefly.united.common.utils.SpringContextUtils;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
-import com.onefly.united.view.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 云存储(支持七牛、阿里云、腾讯云、又拍云)
@@ -39,43 +39,11 @@ public abstract class AbstractCloudStorageService {
     /**
      * 保存上传信息
      */
-    RedisUtils redisUtils;
-
+    public RedisUtils redisUtils = SpringContextUtils.getBean(RedisUtils.class);
     /**
-     * 检查并修改文件上传进度
-     *
-     * @param param
-     * @return
-     * @throws IOException
+     * 分布式锁
      */
-    public boolean checkAndSetUploadProgress(MultipartFileParamDto param) throws IOException {
-        boolean isOk = true;
-        FileUploadResult processingObj = (FileUploadResult) redisUtils.hGet(Constants.ASYNC_UPLOADER, param.getMd5());
-        if (processingObj == null) {
-            processingObj = new FileUploadResult();
-            processingObj.setFileId(param.getMd5());
-            processingObj.setChunks(param.getChunks());
-            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
-        }
-        if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk())) {
-            redisUtils.hSet(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk(), true);
-        }
-        for (int i = 1; i <= param.getChunks(); i++) {
-            if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i)) {
-                log.info("第" + i + "块未上传。");
-                isOk = false;
-                break;
-            }
-        }
-        if (isOk) {
-            processingObj.setStatus(true);
-            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
-            for (int i = 1; i <= param.getChunks(); i++) {
-                redisUtils.hDel(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i);
-            }
-        }
-        return isOk;
-    }
+    private IDistributedLockService distributedLockService = SpringContextUtils.getBean(IDistributedLockService.class);
 
     /**
      * 文件路径
@@ -141,4 +109,24 @@ public abstract class AbstractCloudStorageService {
      * @return
      */
     public abstract String uploadBlock(MultipartFileParamDto param, String suffix);
+
+    /**
+     * 加锁版分块上传
+     *
+     * @param param
+     * @param suffix
+     * @return
+     */
+    public String syncUploadBlock(MultipartFileParamDto param, String suffix) {
+        String url = null;
+        log.warn("加锁" + param.getMd5() + ",chunk:" + param.getChunk());
+        try {
+            distributedLockService.lock("sync:" + param.getMd5(), 10, TimeUnit.MINUTES);
+            url = uploadBlock(param, suffix);
+        } finally {
+            distributedLockService.unlock("sync:" + param.getMd5());
+            log.warn("释放锁" + param.getMd5() + ",chunk:" + param.getChunk());
+        }
+        return url;
+    }
 }
