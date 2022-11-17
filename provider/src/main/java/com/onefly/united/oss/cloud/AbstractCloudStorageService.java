@@ -12,7 +12,9 @@ import com.onefly.united.common.redis.RedisUtils;
 import com.onefly.united.common.redis.lock.IDistributedLockService;
 import com.onefly.united.common.utils.DateUtils;
 import com.onefly.united.common.utils.SpringContextUtils;
+import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
+import com.onefly.united.view.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -102,13 +104,30 @@ public abstract class AbstractCloudStorageService {
     public abstract String uploadSuffix(InputStream inputStream, String suffix);
 
     /**
-     * 分块上传
+     * 初始化
      *
      * @param param
      * @param suffix
      * @return
      */
-    public abstract String uploadBlock(MultipartFileParamDto param, String suffix);
+    public abstract Object startBlock(MultipartFileParamDto param, String suffix);
+
+    /**
+     * 中间处理
+     *
+     * @param param
+     * @param suffix
+     */
+    public abstract void processingBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj);
+
+    /**
+     * 结束扫尾
+     *
+     * @param param
+     * @param suffix
+     * @return
+     */
+    public abstract String endBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj);
 
     /**
      * 加锁版分块上传
@@ -119,13 +138,40 @@ public abstract class AbstractCloudStorageService {
      */
     public String syncUploadBlock(MultipartFileParamDto param, String suffix) {
         String url = null;
-        log.warn("加锁" + param.getMd5() + ",chunk:" + param.getChunk());
+        boolean isOk = true;
+        log.info("加锁" + param.getMd5() + ",chunk:" + param.getChunk());
         try {
-            distributedLockService.lock("sync:" + param.getMd5(), 10, TimeUnit.MINUTES);
-            url = uploadBlock(param, suffix);
+            distributedLockService.lock(param.getMd5(), 10, TimeUnit.MINUTES);
+            FileUploadResult processingObj = (FileUploadResult) redisUtils.hGet(Constants.ASYNC_UPLOADER, param.getMd5());
+            if (processingObj == null) {
+                processingObj = new FileUploadResult();
+                processingObj.setFileId(param.getMd5());
+                processingObj.setChunks(param.getChunks());
+                processingObj.setStore(startBlock(param, suffix));//初始化
+                redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
+            }
+            processingBlock(param, suffix, processingObj);///正在处理
+            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
+            redisUtils.hSet(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk(), true);
+            for (int i = 1; i <= param.getChunks(); i++) {
+                if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i)) {
+                    log.info("第" + i + "块未上传。");
+                    isOk = false;
+                    break;
+                }
+            }
+            if (isOk) {
+                url = endBlock(param, suffix, processingObj);//结束擦屁股操作
+                redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
+                for (int i = 1; i <= param.getChunks(); i++) {
+                    redisUtils.hDel(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
-            distributedLockService.unlock("sync:" + param.getMd5());
-            log.warn("释放锁" + param.getMd5() + ",chunk:" + param.getChunk());
+            distributedLockService.unlock(param.getMd5());
+            log.info("释放锁" + param.getMd5() + ",chunk:" + param.getChunk());
         }
         return url;
     }

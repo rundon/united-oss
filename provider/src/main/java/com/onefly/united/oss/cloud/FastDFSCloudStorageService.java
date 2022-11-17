@@ -17,7 +17,6 @@ import com.onefly.united.common.utils.SpringContextUtils;
 import com.onefly.united.oss.dto.FastDFSPath;
 import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
-import com.onefly.united.view.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -70,48 +69,38 @@ public class FastDFSCloudStorageService extends AbstractCloudStorageService {
     }
 
     @Override
-    public String uploadBlock(MultipartFileParamDto param, String suffix) {
-        boolean isOk = true;
-        String url = null;
-        long offset = CHUNK_SIZE * (param.getChunk() - 1);
-        FileUploadResult processingObj = (FileUploadResult) redisUtils.hGet(Constants.ASYNC_UPLOADER, param.getMd5());
+    public Object startBlock(MultipartFileParamDto param, String suffix) {
+        FastDFSPath store;
         try {
-            if (processingObj == null) {
-                processingObj = new FileUploadResult();
-                processingObj.setFileId(param.getMd5());
-                processingObj.setChunks(param.getChunks());
-                byte[] initialArray = new byte[param.getTotal().intValue()];
-                InputStream targetStream = ByteSource.wrap(initialArray).openStream();
-                StorePath path = defaultAppendFileStorageClient.uploadAppenderFile(DEFAULT_GROUP, targetStream, param.getTotal(), suffix);//添加空文件
-                processingObj.setStore(new FastDFSPath(path.getPath(), path.getGroup()));
-                redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
-            }
-            FastDFSPath path = (FastDFSPath) processingObj.getStore();
-            //一个个修改文件
-            log.warn(param.getChunk() + ":开始上传,start:" + offset);
-            defaultAppendFileStorageClient.modifyFile(path.getGroup(), path.getPath(), param.getFile().getInputStream(), param.getFile().getSize(), offset);
-            // defaultAppendFileStorageClient.appendFile(path.getGroup(), path.getPath(), param.getFile().getInputStream(), param.getFile().getSize());
-            redisUtils.hSet(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk(), true);
+            byte[] initialArray = new byte[param.getTotal().intValue()];
+            InputStream targetStream = ByteSource.wrap(initialArray).openStream();
+            StorePath path = defaultAppendFileStorageClient.uploadAppenderFile(DEFAULT_GROUP, targetStream, param.getTotal(), suffix);//添加空文件
+            store = new FastDFSPath(path.getPath(), path.getGroup());
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new RenException(e.getMessage());
         }
-        for (int i = 1; i <= param.getChunks(); i++) {
-            if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i)) {
-                log.warn("第" + i + "块未上传。");
-                isOk = false;
-                break;
-            }
-        }
-        if (isOk) {
-            processingObj.setStatus(true);
+        return store;
+    }
+
+    @Override
+    public void processingBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
+        long offset = CHUNK_SIZE * (param.getChunk() - 1);
+        try {
             FastDFSPath path = (FastDFSPath) processingObj.getStore();
-            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
-            for (int i = 1; i <= param.getChunks(); i++) {
-                redisUtils.hDel(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i);
-            }
-            url = config.getFastdfsDomain() + "/" + path.getPath();
+            //一个个修改文件
+            log.info(param.getChunk() + ":开始上传,start:" + offset);
+            defaultAppendFileStorageClient.modifyFile(path.getGroup(), path.getPath(), param.getFile().getInputStream(), param.getFile().getSize(), offset);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new RenException(e.getMessage());
         }
-        return url;
+    }
+
+    @Override
+    public String endBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
+        processingObj.setStatus(true);
+        FastDFSPath path = (FastDFSPath) processingObj.getStore();
+        return config.getFastdfsDomain() + "/" + path.getPath();
     }
 }

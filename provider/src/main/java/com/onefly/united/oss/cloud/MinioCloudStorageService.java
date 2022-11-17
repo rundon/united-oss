@@ -10,6 +10,7 @@ package com.onefly.united.oss.cloud;
 
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
+import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import io.minio.MinioClient;
 import io.minio.errors.InvalidEndpointException;
@@ -76,7 +77,17 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
     }
 
     @Override
-    public String uploadBlock(MultipartFileParamDto param, String suffix) {
+    public Object startBlock(MultipartFileParamDto param, String suffix) {
+        return null;
+    }
+
+    @Override
+    public void processingBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
+
+    }
+
+    @Override
+    public String endBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
         return null;
     }
 }

@@ -12,7 +12,6 @@ import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
 import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
-import com.onefly.united.view.utils.Constants;
 import com.onefly.united.view.utils.FileMD5Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -29,10 +28,16 @@ import java.nio.channels.FileChannel;
  */
 @Slf4j
 public class LocalCloudStorageService extends AbstractCloudStorageService {
+    /**
+     * 临时的文件存储luj
+     */
+    private String temp;
 
     public LocalCloudStorageService(CloudStorageConfig config) {
+        temp = config.getLocalPath() + File.separatorChar + "ChunkData" + File.separatorChar;
         this.config = config;
     }
+
 
     @Override
     public String upload(byte[] data, String path) {
@@ -63,10 +68,15 @@ public class LocalCloudStorageService extends AbstractCloudStorageService {
     }
 
     @Override
-    public String uploadBlock(MultipartFileParamDto param, String suffix) {
+    public Object startBlock(MultipartFileParamDto param, String suffix) {
+
+        log.info("初始化 本地无需存储信息");
+        return null;
+    }
+
+    @Override
+    public void processingBlock(MultipartFileParamDto param, String suffix,FileUploadResult processingObj) {
         log.info(param.getChunk() + ":开始上传");
-        String url = null;
-        String temp = config.getLocalPath() + File.separatorChar + "ChunkData" + File.separatorChar;
         String fileName = param.getName();
         String uploadDirPath = temp + param.getMd5();
         String tempFileName = fileName + "_tmp";
@@ -79,7 +89,6 @@ public class LocalCloudStorageService extends AbstractCloudStorageService {
         try {
             RandomAccessFile tempRaf = new RandomAccessFile(tmpFile, "rw");
             fileChannel = tempRaf.getChannel();
-
             //写入该分片数据
             long offset = CHUNK_SIZE * (param.getChunk() - 1);
             byte[] fileData = param.getFile().getBytes();
@@ -88,21 +97,9 @@ public class LocalCloudStorageService extends AbstractCloudStorageService {
             // 释放
             FileMD5Util.freedMappedByteBuffer(mappedByteBuffer);
             fileChannel.close();
-            boolean isOk = checkAndSetUploadProgress(param);
-            if (isOk) {
-                boolean flag = renameFile(tmpFile, fileName);
-                if (flag) {
-                    File targe = new File(tmpFile.getParent() + File.separatorChar + fileName);
-                    FileInputStream fileIo = new FileInputStream(targe);
-                    url = uploadSuffix(fileIo, suffix);
-                    log.warn("upload complete !!" + url + " name=" + fileName + "清空临时文件：" + uploadDirPath);
-                    delDir(tmpDir);
-                } else {
-                    log.error("重命名失败了");
-                }
-            }
         } catch (IOException e) {
             log.error("错误：" + e.getMessage());
+            throw new RenException("本地上传失败" + e.getMessage());
         } finally {
             if (fileChannel != null) {
                 try {
@@ -112,43 +109,34 @@ public class LocalCloudStorageService extends AbstractCloudStorageService {
                 }
             }
         }
-        return url;
+        log.info(param.getChunk() + ":结束上传");
     }
 
-    /**
-     * 检查并修改文件上传进度
-     *
-     * @param param
-     * @return
-     * @throws IOException
-     */
-    public boolean checkAndSetUploadProgress(MultipartFileParamDto param) throws IOException {
-        boolean isOk = true;
-        FileUploadResult processingObj = (FileUploadResult) redisUtils.hGet(Constants.ASYNC_UPLOADER, param.getMd5());
-        if (processingObj == null) {
-            processingObj = new FileUploadResult();
-            processingObj.setFileId(param.getMd5());
-            processingObj.setChunks(param.getChunks());
-            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
-        }
-        if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk())) {
-            redisUtils.hSet(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + param.getChunk(), true);
-        }
-        for (int i = 1; i <= param.getChunks(); i++) {
-            if (!redisUtils.hHasKey(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i)) {
-                log.info("第" + i + "块未上传。");
-                isOk = false;
-                break;
+    @Override
+    public String endBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
+        String url = null;
+        String fileName = param.getName();
+        String uploadDirPath = temp + param.getMd5();
+        String tempFileName = fileName + "_tmp";
+        File tmpDir = new File(uploadDirPath);
+        File tmpFile = new File(uploadDirPath, tempFileName);
+        try {
+            boolean flag = renameFile(tmpFile, fileName);
+            if (flag) {
+                processingObj.setStatus(true);
+                File targe = new File(tmpFile.getParent() + File.separatorChar + fileName);
+                FileInputStream fileIo = new FileInputStream(targe);
+                url = uploadSuffix(fileIo, suffix);
+                log.info("upload complete !!" + url + " name=" + fileName + "清空临时文件：" + uploadDirPath);
+                delDir(tmpDir);
+            } else {
+                log.error("重命名失败了");
             }
+        } catch (Exception e) {
+            log.error("本地改名失败：" + e.getMessage());
+            throw new RenException("本地改名失败" + e.getMessage());
         }
-        if (isOk) {
-            processingObj.setStatus(true);
-            redisUtils.hSet(Constants.ASYNC_UPLOADER, param.getMd5(), processingObj);
-            for (int i = 1; i <= param.getChunks(); i++) {
-                redisUtils.hDel(Constants.ASYNC_UPLOADER_CHUNK, param.getMd5() + "@" + i);
-            }
-        }
-        return isOk;
+        return url;
     }
 
     /**
