@@ -8,24 +8,29 @@
 
 package com.onefly.united.oss.cloud;
 
+import com.google.common.collect.Lists;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
 import com.onefly.united.oss.dto.FileUploadResult;
+import com.onefly.united.oss.dto.MinioStore;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
-import io.minio.MinioClient;
-import io.minio.errors.InvalidEndpointException;
-import io.minio.errors.InvalidPortException;
+import io.minio.*;
+import io.minio.messages.Part;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * MinIO 存储
  *
  * @author Mark sunlightcs@gmail.com
  */
+@Slf4j
 public class MinioCloudStorageService extends AbstractCloudStorageService {
-    private MinioClient minioClient;
+
+    private CustomMinioClient minioClient;
 
     public MinioCloudStorageService(CloudStorageConfig config) {
         this.config = config;
@@ -34,13 +39,12 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
     }
 
     private void init() {
-        try {
-            minioClient = new MinioClient(config.getMinioEndPoint(), config.getMinioAccessKey(), config.getMinioSecretKey());
-        } catch (InvalidEndpointException e) {
-            e.printStackTrace();
-        } catch (InvalidPortException e) {
-            e.printStackTrace();
-        }
+        MinioClient client =
+                MinioClient.builder()
+                        .endpoint(config.getMinioEndPoint())
+                        .credentials(config.getMinioAccessKey(), config.getMinioSecretKey())
+                        .build();
+        minioClient = new CustomMinioClient(client);
     }
 
     @Override
@@ -52,13 +56,17 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
     public String upload(InputStream inputStream, String path) {
         try {
             //如果BucketName不存在，则创建
-            boolean found = minioClient.bucketExists(config.getMinioBucketName());
+            boolean found =
+                    minioClient.bucketExists(BucketExistsArgs.builder().bucket(config.getMinioBucketName()).build());
             if (!found) {
-                minioClient.makeBucket(config.getMinioBucketName());
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(config.getMinioBucketName()).build());
             }
-
-            minioClient.putObject(config.getMinioBucketName(), path, inputStream, Long.valueOf(inputStream.available()),
-                    null, null, "application/octet-stream");
+            PutObjectArgs arg = PutObjectArgs.builder()
+                    .bucket(config.getMinioBucketName())
+                    .object(path)
+                    .stream(inputStream, Long.valueOf(inputStream.available()), -1)
+                    .contentType("application/octet-stream").build();
+            minioClient.putObject(arg);
         } catch (Exception e) {
             throw new RenException(ErrorCode.OSS_UPLOAD_FILE_ERROR, e, "");
         }
@@ -78,16 +86,52 @@ public class MinioCloudStorageService extends AbstractCloudStorageService {
 
     @Override
     public Object startBlock(MultipartFileParamDto param, String suffix) {
-        return null;
+        MinioStore store = new MinioStore();
+        String objectName = getPath(config.getAliyunPrefix(), suffix);
+        try {
+            String uploadId = minioClient.initMultiPartUpload(config.getMinioBucketName(), objectName);
+            store.setUploadId(uploadId);
+            store.setObjectName(objectName);
+        } catch (Exception e) {
+            log.error("minio 初始化异常" + e.getMessage());
+            throw new RenException(e.getMessage());
+        }
+        return store;
     }
 
     @Override
     public void processingBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
-
+        MinioStore store = (MinioStore) processingObj.getStore();
+        try {
+            minioClient.uploadMultipart(config.getMinioBucketName(), store.getObjectName(), param.getFile().getInputStream()
+                    , param.getFile().getSize(), store.getUploadId(), param.getChunk());
+        } catch (Exception e) {
+            log.error("minio 分块上传异常" + e.getMessage());
+            throw new RenException(e.getMessage());
+        }
     }
 
     @Override
     public String endBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
-        return null;
+        String url = null;
+        try {
+            List<Part> parts = Lists.newArrayList();
+            processingObj.setStatus(true);
+            MinioStore store = (MinioStore) processingObj.getStore();
+            ListPartsResponse partResult = minioClient.listMultipart(config.getMinioBucketName(), store.getObjectName()
+                    , 0, store.getUploadId());
+            int partNumber = 1;
+            for (Part part : partResult.result().partList()) {
+                parts.add(partNumber - 1, new Part(partNumber, part.etag()));
+                partNumber++;
+            }
+            ObjectWriteResponse result = minioClient.mergeMultipartUpload(config.getMinioBucketName(), store.getObjectName(), store.getUploadId(), parts.toArray(new Part[parts.size()]));
+            log.info("合并结果：" + result.object());
+            url = config.getMinioEndPoint() + "/" + config.getMinioBucketName() + "/" + store.getObjectName();
+        } catch (Exception e) {
+            log.error("minio 合并异常" + e.getMessage());
+            throw new RenException(e.getMessage());
+        }
+        return url;
     }
 }

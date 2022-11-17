@@ -15,7 +15,7 @@ import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.*;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
-import com.onefly.united.oss.dto.AliyunPath;
+import com.onefly.united.oss.dto.AliyunStore;
 import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 阿里云存储
@@ -71,15 +73,15 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
     public Object startBlock(MultipartFileParamDto param, String suffix) {
         OSS ossClient = new OSSClientBuilder().build(config.getAliyunEndPoint(), config.getAliyunAccessKeyId(),
                 config.getAliyunAccessKeySecret());
-        AliyunPath store = new AliyunPath();
+        AliyunStore store = new AliyunStore();
         try {
-            String path = getPath(config.getAliyunPrefix(), suffix);
-            InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(config.getAliyunBucketName(), path);
+            String objectName = getPath(config.getAliyunPrefix(), suffix);
+            InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(config.getAliyunBucketName(), objectName);
             // 初始化分片。
             InitiateMultipartUploadResult upresult = ossClient.initiateMultipartUpload(request);
             String uploadId = upresult.getUploadId();
             store.setUploadId(uploadId);
-            store.setObjectName(path);
+            store.setObjectName(objectName);
         } catch (OSSException oe) {
             log.error("初始化错误:Error Message:{},Error Code:{},Request ID:{},Host ID:{}", oe.getErrorMessage(), oe.getErrorCode(), oe.getRequestId(), oe.getHostId());
             throw new RenException(oe.getErrorMessage());
@@ -100,7 +102,7 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
         OSS ossClient = new OSSClientBuilder().build(config.getAliyunEndPoint(), config.getAliyunAccessKeyId(),
                 config.getAliyunAccessKeySecret());
         try {
-            AliyunPath store = (AliyunPath) processingObj.getStore();
+            AliyunStore store = (AliyunStore) processingObj.getStore();
             log.info(param.getChunk() + ":开始上传,start:" + offset);
             // 跳过已经上传的分片。
             UploadPartRequest uploadPartRequest = new UploadPartRequest();
@@ -115,7 +117,6 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
             // 每个分片不需要按顺序上传，甚至可以在不同客户端上传，OSS会按照分片号排序组成完整的文件。
             UploadPartResult uploadPartResult = ossClient.uploadPart(uploadPartRequest);
             // 每次上传分片之后，OSS的返回结果包含PartETag。PartETag将被保存在partETags中。
-            store.getPartETags().add(uploadPartResult.getPartETag());
         } catch (OSSException oe) {
             log.error("处理中错误:Error Message:{},Error Code:{},Request ID:{},Host ID:{}", oe.getErrorMessage(), oe.getErrorCode(), oe.getRequestId(), oe.getHostId());
             throw new RenException(oe.getErrorMessage());
@@ -139,12 +140,21 @@ public class AliyunCloudStorageService extends AbstractCloudStorageService {
                 config.getAliyunAccessKeySecret());
         try {
             processingObj.setStatus(true);
-            AliyunPath store = (AliyunPath) processingObj.getStore();
+            List<PartETag> partETags = new ArrayList<PartETag>();
+            AliyunStore store = (AliyunStore) processingObj.getStore();
+            ListPartsRequest listPartsRequest = new ListPartsRequest(config.getAliyunBucketName(), store.getObjectName(), store.getUploadId());
+            PartListing partListing = ossClient.listParts(listPartsRequest);
+            int partCount = partListing.getParts().size();
+            for (int i = 0; i < partCount; i++) {
+                PartSummary partSummary = partListing.getParts().get(i);
+                partETags.add(new PartETag(partSummary.getPartNumber(), partSummary.getETag()));
+            }
+
             //合并
             CompleteMultipartUploadRequest completeMultipartUploadRequest =
-                    new CompleteMultipartUploadRequest(config.getAliyunBucketName(), store.getObjectName(), store.getUploadId(), store.getPartETags());
+                    new CompleteMultipartUploadRequest(config.getAliyunBucketName(), store.getObjectName(), store.getUploadId(), partETags);
             CompleteMultipartUploadResult completeMultipartUploadResult = ossClient.completeMultipartUpload(completeMultipartUploadRequest);
-            System.out.println(completeMultipartUploadResult.getETag());
+            log.info(completeMultipartUploadResult.getETag());
             url = config.getAliyunDomain() + "/" + store.getObjectName();
         } catch (OSSException oe) {
             log.error("结束错误:Error Message:{},Error Code:{},Request ID:{},Host ID:{}", oe.getErrorMessage(), oe.getErrorCode(), oe.getRequestId(), oe.getHostId());

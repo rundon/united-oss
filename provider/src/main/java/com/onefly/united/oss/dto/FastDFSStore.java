@@ -9,7 +9,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class FastDFSPath {
+public class FastDFSStore {
     private String path;
     private String group;
 }
