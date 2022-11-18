@@ -14,7 +14,7 @@ import com.google.common.io.ByteSource;
 import com.onefly.united.common.exception.ErrorCode;
 import com.onefly.united.common.exception.RenException;
 import com.onefly.united.common.utils.SpringContextUtils;
-import com.onefly.united.oss.dto.FastDFSStore;
+import com.onefly.united.oss.dto.CloudStore;
 import com.onefly.united.oss.dto.FileUploadResult;
 import com.onefly.united.oss.dto.MultipartFileParamDto;
 import lombok.extern.slf4j.Slf4j;
@@ -70,12 +70,12 @@ public class FastDFSCloudStorageService extends AbstractCloudStorageService {
 
     @Override
     public Object startBlock(MultipartFileParamDto param, String suffix) {
-        FastDFSStore store;
+        CloudStore store;
         try {
             byte[] initialArray = new byte[param.getTotal().intValue()];
             InputStream targetStream = ByteSource.wrap(initialArray).openStream();
             StorePath path = defaultAppendFileStorageClient.uploadAppenderFile(DEFAULT_GROUP, targetStream, param.getTotal(), suffix);//添加空文件
-            store = new FastDFSStore(path.getPath(), path.getGroup());
+            store = new CloudStore(path.getPath(), path.getGroup());
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new RenException(e.getMessage());
@@ -87,10 +87,10 @@ public class FastDFSCloudStorageService extends AbstractCloudStorageService {
     public void processingBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
         long offset = CHUNK_SIZE * (param.getChunk() - 1);
         try {
-            FastDFSStore path = (FastDFSStore) processingObj.getStore();
+            CloudStore path = (CloudStore) processingObj.getStore();
             //一个个修改文件
             log.info(param.getChunk() + ":开始上传,start:" + offset);
-            defaultAppendFileStorageClient.modifyFile(path.getGroup(), path.getPath(), param.getFile().getInputStream(), param.getFile().getSize(), offset);
+            defaultAppendFileStorageClient.modifyFile(path.getUploadId(), path.getObjectName(), param.getFile().getInputStream(), param.getFile().getSize(), offset);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new RenException(e.getMessage());
@@ -100,7 +100,7 @@ public class FastDFSCloudStorageService extends AbstractCloudStorageService {
     @Override
     public String endBlock(MultipartFileParamDto param, String suffix, FileUploadResult processingObj) {
         processingObj.setStatus(true);
-        FastDFSStore path = (FastDFSStore) processingObj.getStore();
-        return config.getFastdfsDomain() + "/" + path.getPath();
+        CloudStore path = (CloudStore) processingObj.getStore();
+        return config.getFastdfsDomain() + "/" + path.getObjectName();
     }
 }
