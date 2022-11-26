@@ -1,11 +1,3 @@
-/**
- * Copyright (c) 2018 人人开源 All rights reserved.
- * <p>
- * https://www.renren.io
- * <p>
- * 版权所有，侵权必究！
- */
-
 package com.onefly.united.oss.cloud;
 
 import com.github.tobato.fastdfs.domain.fdfs.StorePath;
@@ -26,7 +18,7 @@ import java.io.InputStream;
 /**
  * FastDFS
  *
- * @author Mark sunlightcs@gmail.com
+ * @author rundon
  */
 @Slf4j
 public class FastDFSCloudStorageService extends AbstractCloudStorageService {

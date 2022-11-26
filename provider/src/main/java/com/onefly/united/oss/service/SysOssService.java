@@ -1,11 +1,3 @@
-/**
- * Copyright (c) 2018 人人开源 All rights reserved.
- * <p>
- * https://www.renren.io
- * <p>
- * 版权所有，侵权必究！
- */
-
 package com.onefly.united.oss.service;
 
 import com.onefly.united.common.page.PageData;
@@ -23,7 +15,7 @@ import java.util.Map;
 /**
  * 文件上传
  *
- * @author Mark sunlightcs@gmail.com
+ * @author rundon
  */
 public interface SysOssService extends BaseService<SysOssEntity> {
 

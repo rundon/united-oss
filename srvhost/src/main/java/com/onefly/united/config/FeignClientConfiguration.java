@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2018. utaka and/or its affiliates.
- */
-
 package com.onefly.united.config;
 
 import feign.RequestInterceptor;

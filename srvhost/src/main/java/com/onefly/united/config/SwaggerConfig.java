@@ -1,11 +1,3 @@
-/**
- * Copyright (c) 2018 人人开源 All rights reserved.
- *
- * https://www.renren.io
- *
- * 版权所有，侵权必究！
- */
-
 package com.onefly.united.config;
 
 import com.onefly.united.common.constant.Constant;
@@ -32,7 +24,7 @@ import static com.google.common.collect.Lists.newArrayList;
 /**
  * Swagger配置
  *
- * @author Mark sunlightcs@gmail.com
+ * @author rundon
  */
 @Configuration
 @EnableSwagger2WebMvc
